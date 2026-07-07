@@ -4,15 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadora de Teletrabajo · ANECA</title>
-<meta name="description" content="Calcula los días presenciales obligatorios y los días de teletrabajo disponibles en ANECA, según el 40% de jornadas efectivas y el calendario de festivos de Madrid capital.">
+<meta name="description" content="Planifica en un calendario anual tus días presenciales, ausencias y teletrabajo en ANECA. Comprueba el 40% de jornadas efectivas presenciales con los festivos de Madrid capital.">
 <style>
   :root{
     --bg:#f4f6fb; --card:#ffffff; --ink:#16202e; --muted:#5c6b7f;
     --line:#e3e8f0; --brand:#2f6fed; --brand-ink:#1b4bb8;
-    --office:#e8813a; --office-soft:#fdeede;
-    --tele:#2fa36b; --tele-soft:#e6f5ed;
-    --warn:#c23b3b; --shadow:0 1px 2px rgba(16,32,54,.06),0 8px 24px rgba(16,32,54,.06);
-    --r:14px;
+    --office:#e8813a; --office-soft:#fdeede;      /* presencial */
+    --tele:#2fa36b; --tele-soft:#e6f5ed;          /* teletrabajo */
+    --absence:#6d7c93; --absence-soft:#eceff4;    /* ausencia */
+    --holiday:#8b5cf6; --holiday-soft:#efeafe;    /* festivo */
+    --ok:#2fa36b; --warn:#c23b3b;
+    --shadow:0 1px 2px rgba(16,32,54,.06),0 8px 24px rgba(16,32,54,.06); --r:14px;
   }
   @media (prefers-color-scheme: dark){
     :root{
@@ -20,490 +22,405 @@
       --line:#263245; --brand:#5b8dff; --brand-ink:#8fb0ff;
       --office:#f0955a; --office-soft:#3a2415;
       --tele:#4cc98c; --tele-soft:#12321f;
-      --warn:#ff7b7b; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+      --absence:#8697ad; --absence-soft:#212b3a;
+      --holiday:#a888fb; --holiday-soft:#241a3d;
+      --ok:#4cc98c; --warn:#ff7b7b;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
     }
   }
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{
-    background:var(--bg); color:var(--ink);
+  body{background:var(--bg);color:var(--ink);
     font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased; padding:24px 16px 64px;
-  }
-  .wrap{max-width:920px;margin:0 auto}
+    -webkit-font-smoothing:antialiased;padding:24px 16px 64px}
+  .wrap{max-width:1040px;margin:0 auto}
   header.page{margin:8px 0 24px}
   header.page h1{font-size:1.7rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
-  header.page p{margin:0;color:var(--muted);max-width:60ch}
-  .badge{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.04em;
-    text-transform:uppercase;color:var(--brand-ink);background:color-mix(in srgb,var(--brand) 14%,transparent);
-    padding:4px 10px;border-radius:999px;margin-bottom:12px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-    box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
-  .card h2{font-size:1.05rem;margin:0 0 16px;letter-spacing:-.01em}
-  .card h2 .n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--brand);
-    color:#fff;font-size:.78rem;align-items:center;justify-content:center;margin-right:8px;vertical-align:1px}
+  header.page p{margin:0;color:var(--muted);max-width:66ch}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .badge{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--brand-ink);background:color-mix(in srgb,var(--brand) 14%,transparent);padding:4px 10px;border-radius:999px}
+  .cfg-link{font-size:.85rem;font-weight:600;text-decoration:none;color:var(--brand-ink);
+    border:1px solid var(--line);border-radius:10px;padding:8px 12px;white-space:nowrap}
+  .cfg-link:hover{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+  .card h2{font-size:1.05rem;margin:0 0 4px;letter-spacing:-.01em}
+  .card h2 .n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;
+    font-size:.78rem;align-items:center;justify-content:center;margin-right:8px;vertical-align:1px}
+  .card .sub{color:var(--muted);font-size:.88rem;margin:0 0 14px}
   label{display:block;font-size:.82rem;font-weight:600;color:var(--muted);margin:0 0 6px}
-  select,input[type=date],input[type=number],input[type=text]{
-    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
-    background:var(--bg);color:var(--ink);font:inherit;font-size:.95rem}
-  select:focus,input:focus{outline:2px solid color-mix(in srgb,var(--brand) 40%,transparent);border-color:var(--brand)}
-  .grid{display:grid;gap:14px}
-  .g2{grid-template-columns:1fr 1fr}
-  .g3{grid-template-columns:1fr 1fr 1fr}
-  @media(max-width:560px){.g2,.g3{grid-template-columns:1fr}}
-  .seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
-  .seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:600;
-    padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.9rem}
-  .seg button[aria-pressed=true]{background:var(--brand);color:#fff}
+  select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:.95rem}
+  select:focus{outline:2px solid color-mix(in srgb,var(--brand) 40%,transparent);border-color:var(--brand)}
   .btn{border:0;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;padding:9px 14px}
   .btn-ghost{background:transparent;color:var(--brand-ink);border:1px dashed var(--line)}
   .btn-ghost:hover{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent)}
-  .btn-x{background:transparent;color:var(--muted);border:1px solid var(--line);width:38px;padding:9px 0}
-  .btn-x:hover{color:var(--warn);border-color:var(--warn)}
-  .abs-row{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end}
-  @media(max-width:560px){.abs-row{grid-template-columns:1fr 1fr;}.abs-row .btn-x{grid-column:2;justify-self:end}}
-  .abs-note{font-size:.8rem;color:var(--muted);margin:2px 0 14px}
-  /* results */
-  .results{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:560px){.results{grid-template-columns:1fr}}
-  .stat{border:1px solid var(--line);border-radius:12px;padding:16px}
-  .stat .k{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-  .stat .v{font-size:2rem;font-weight:700;line-height:1.1;margin-top:4px;letter-spacing:-.02em}
-  .stat .s{font-size:.82rem;color:var(--muted);margin-top:2px}
-  .stat.office{background:var(--office-soft);border-color:transparent}
-  .stat.office .v{color:var(--office)}
-  .stat.tele{background:var(--tele-soft);border-color:transparent}
-  .stat.tele .v{color:var(--tele)}
-  .headline{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;
-    padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);margin-bottom:2px}
-  .headline b{font-size:1.05rem}
-  .headline .period{color:var(--muted)}
-  .bar{grid-column:1/-1;height:14px;border-radius:999px;overflow:hidden;display:flex;border:1px solid var(--line)}
-  .bar i{display:block;height:100%}
-  .bar .o{background:var(--office)}
-  .bar .t{background:var(--tele)}
-  .legend{grid-column:1/-1;display:flex;gap:18px;font-size:.82rem;color:var(--muted);margin-top:-4px}
-  .legend span{display:inline-flex;align-items:center;gap:6px}
+
+  .controls{display:flex;flex-wrap:wrap;gap:16px 22px;align-items:flex-end;margin-bottom:16px}
+  .paint{display:flex;flex-direction:column;gap:6px}
+  .seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap}
+  .seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;font-size:.86rem;
+    padding:8px 12px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  .seg button .dot{width:11px;height:11px;border-radius:4px;display:inline-block}
+  .seg button[aria-pressed=true]{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);outline:2px solid var(--brand)}
+  .spacer{flex:1}
+  .selinfo{font-size:.86rem;color:var(--muted);align-self:center}
+
+  /* ---- Calendario ---- */
+  .cal-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8rem;color:var(--muted);margin:2px 0 16px}
+  .cal-legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid transparent}
+  .months{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:900px){.months{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:680px){.months{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:430px){.months{grid-template-columns:1fr}}
+  .mon{border:1px solid var(--line);border-radius:12px;padding:10px 10px 12px;background:var(--bg)}
+  .mon.summer{border-color:color-mix(in srgb,var(--office) 50%,var(--line));box-shadow:inset 0 3px 0 -1px var(--office)}
+  .mon .mh{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}
+  .mon .mh b{font-size:.9rem;letter-spacing:-.01em}
+  .mon .mh .tag{font-size:.6rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#fff;
+    background:var(--office);border-radius:999px;padding:2px 7px}
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px}
+  .dow span{font-size:.62rem;font-weight:700;color:var(--muted);text-align:center}
+  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;user-select:none;-webkit-user-select:none}
+  .day{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:.72rem;border-radius:7px}
+  .day.pad{visibility:hidden}
+  .day[data-work]{cursor:pointer;touch-action:none;color:#fff;font-weight:600;border:1px solid transparent}
+  .day.tele{background:var(--tele)}
+  .day.pres{background:var(--office)}
+  .day.abs{background:var(--absence)}
+  .day[data-work]:hover{outline:2px solid var(--brand);outline-offset:1px}
+  .day.we{color:var(--muted);opacity:.5}
+  .day.ho{background:var(--holiday);color:#fff;font-weight:700;cursor:help}
+  .day.ho::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.85)}
+
+  /* ---- Totales ---- */
+  .totrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:4px 0 22px}
+  @media(max-width:680px){.totrow{grid-template-columns:1fr 1fr}}
+  @media(max-width:430px){.totrow{grid-template-columns:1fr}}
+  .stat{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stat .k{font-size:.74rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .stat .v{font-size:1.8rem;font-weight:700;line-height:1.1;margin-top:4px;letter-spacing:-.02em}
+  .stat .s{font-size:.78rem;color:var(--muted);margin-top:2px}
+  .stat.tele{background:var(--tele-soft);border-color:transparent}.stat.tele .v{color:var(--tele)}
+  .stat.office{background:var(--office-soft);border-color:transparent}.stat.office .v{color:var(--office)}
+  .stat.state .v.ok{color:var(--ok)} .stat.state .v.bad{color:var(--warn)}
+
+  /* ---- Histograma ---- */
+  .chart-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.82rem;color:var(--muted);margin:6px 0 8px}
+  .chart-legend span{display:inline-flex;align-items:center;gap:6px}
   .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
-  details.detail{grid-column:1/-1;margin-top:4px;border-top:1px solid var(--line);padding-top:12px}
+  .dash{width:14px;height:0;border-top:2px dashed var(--ink);display:inline-block}
+  .chart{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px;align-items:end;height:240px;padding:6px 2px 0;border-bottom:2px solid var(--line);overflow-x:auto}
+  .col{display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;min-width:34px}
+  .col .barwrap{position:relative;width:100%;max-width:46px;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+  .col.summer .barwrap{max-width:66px}
+  .bar{width:100%;border-radius:6px 6px 3px 3px;overflow:hidden;display:flex;flex-direction:column}
+  .bar .seg{width:100%;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;color:#fff}
+  .bar .seg.tele{background:var(--tele)} .bar .seg.office{background:var(--office)}
+  .bar .seg.small{color:transparent}
+  .minmark{position:absolute;left:-2px;right:-2px;height:0;border-top:2px dashed var(--ink);opacity:.6;pointer-events:none}
+  .caps{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px;margin-top:8px}
+  .cap{text-align:center;font-size:.72rem;color:var(--muted);min-width:34px}
+  .cap b{display:block;color:var(--ink);font-size:.78rem}
+  .cap .badge2{display:inline-block;margin-top:2px;font-weight:700}
+  .cap .ok{color:var(--ok)} .cap .bad{color:var(--warn)}
+
+  /* ---- Tabla ---- */
+  details.detail{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
   details.detail summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--brand-ink)}
-  .lines{margin-top:10px;font-size:.88rem}
-  .lines .li{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line)}
-  .lines .li:last-child{border-bottom:0}
-  .lines .li.total{font-weight:700}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{font-size:.76rem;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--muted)}
-  /* holidays editor */
-  .hol-list{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
-  .hol{display:inline-flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
-    border-radius:10px;padding:6px 8px 6px 12px;font-size:.85rem}
-  .hol b{font-variant-numeric:tabular-nums}
-  .hol span{color:var(--muted)}
-  .hol button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px}
-  .hol button:hover{color:var(--warn)}
-  .add-hol{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:end}
-  @media(max-width:560px){.add-hol{grid-template-columns:1fr 1fr}.add-hol .btn{grid-column:1/-1}}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.85rem}
+  th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+  tbody tr.summer td:first-child{color:var(--office);font-weight:700}
+  tbody td .ok{color:var(--ok);font-weight:700} tbody td .bad{color:var(--warn);font-weight:700}
+  tfoot td{font-weight:700;border-top:2px solid var(--line)}
   .note{font-size:.82rem;color:var(--muted)}
-  .note code{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 5px}
   footer{color:var(--muted);font-size:.8rem;text-align:center;margin-top:8px}
-  a{color:var(--brand-ink)}
-  .warnbox{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);
-    color:var(--ink);border-radius:10px;padding:10px 14px;font-size:.86rem;margin-top:12px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="page">
-    <span class="badge">ANECA · Teletrabajo</span>
-    <h1>Calculadora de días presenciales y teletrabajo</h1>
-    <p>El <b>40&nbsp;% de las jornadas efectivas</b> deben ser presenciales. Se calcula sobre los días
-    realmente trabajados (laborables de Madrid capital menos tus ausencias), no sobre el calendario.
-    El redondeo siempre favorece al teletrabajo.</p>
+    <div class="topbar">
+      <span class="badge">ANECA · Teletrabajo</span>
+      <a class="cfg-link" href="configuracion.html">⚙ Configurar festivos</a>
+    </div>
+    <h1>Planificador de teletrabajo y días presenciales</h1>
+    <p>Marca en el calendario tus <b>días presenciales</b> (en los que no teletrabajas) y tus <b>ausencias</b>
+    (vacaciones, bajas, permisos). El resto de días laborables se muestran como <b>teletrabajo</b>. La herramienta
+    comprueba que cumples la regla: <b>al menos el 40&nbsp;% de las jornadas efectivas</b> deben ser presenciales.
+    <b>Junio–septiembre</b> se computan como un único bloque de 4 meses.</p>
   </header>
 
-  <!-- 1. Periodo -->
+  <!-- 1. Calendario -->
   <section class="card">
-    <h2><span class="n">1</span>Periodo de cómputo</h2>
-    <div class="seg" role="group" aria-label="Modo de cómputo" style="margin-bottom:16px">
-      <button id="modeMonth" aria-pressed="true">Mes</button>
-      <button id="modeSummer" aria-pressed="false">Verano (jun–sep)</button>
-    </div>
-    <div class="grid g2">
-      <div>
+    <div class="controls">
+      <div class="paint">
         <label for="year">Año</label>
         <select id="year"></select>
       </div>
-      <div id="monthWrap">
-        <label for="month">Mes</label>
-        <select id="month"></select>
+      <div class="paint">
+        <label>Pincel — al pulsar/arrastrar marcas…</label>
+        <div class="seg" id="tools" role="group" aria-label="Herramienta de marcado">
+          <button data-tool="pres" aria-pressed="true"><i class="dot" style="background:var(--office)"></i>Presencial</button>
+          <button data-tool="abs" aria-pressed="false"><i class="dot" style="background:var(--absence)"></i>Ausencia</button>
+          <button data-tool="tele" aria-pressed="false"><i class="dot" style="background:var(--tele)"></i>Teletrabajo <span class="note" style="font-weight:600">(borrar)</span></button>
+        </div>
       </div>
+      <div class="spacer"></div>
+      <span class="selinfo" id="selInfo"></span>
+      <button class="btn btn-ghost" id="clearSel">Reiniciar año</button>
     </div>
-    <p class="abs-note" id="periodHint"></p>
-  </section>
-
-  <!-- 2. Ausencias -->
-  <section class="card">
-    <h2><span class="n">2</span>Ausencias en el periodo</h2>
-    <p class="abs-note">Vacaciones, bajas, permisos, asuntos propios… Cualquier día que <i>no</i> trabajas
-      se descuenta de las jornadas efectivas. Se cuentan solo los días laborables dentro de cada rango.</p>
-    <div id="absList"></div>
-    <button class="btn btn-ghost" id="addAbs">+ Añadir ausencia</button>
-  </section>
-
-  <!-- 3. Resultado -->
-  <section class="card">
-    <h2><span class="n">3</span>Resultado</h2>
-    <div class="results" id="results"></div>
-  </section>
-
-  <!-- Festivos -->
-  <section class="card">
-    <h2><span class="n">★</span>Festivos de Madrid capital</h2>
-    <p class="note" id="holYearLabel"></p>
-    <div class="hol-list" id="holList"></div>
-    <div class="add-hol">
-      <div><label for="holDate">Fecha</label><input type="date" id="holDate"></div>
-      <div><label for="holName">Nombre</label><input type="text" id="holName" placeholder="p. ej. San Isidro"></div>
-      <button class="btn btn-ghost" id="addHol">+ Añadir festivo</button>
+    <h2 style="margin-top:4px"><span class="n">1</span>Planifica tu año</h2>
+    <p class="sub">Haz clic en un día o <b>arrastra</b> (ratón o dedo) para marcar un rango, incluso cruzando de un
+      mes a otro. Cambia de pincel para marcar presenciales, ausencias o volver a teletrabajo.</p>
+    <div class="cal-legend">
+      <span><i class="sw" style="background:var(--tele)"></i>Teletrabajo</span>
+      <span><i class="sw" style="background:var(--office)"></i>Presencial</span>
+      <span><i class="sw" style="background:var(--absence)"></i>Ausencia</span>
+      <span><i class="sw" style="background:var(--holiday)"></i>Festivo Madrid</span>
+      <span><i class="sw" style="background:var(--bg);border-color:var(--line)"></i>Fin de semana</span>
     </div>
-    <p class="note" style="margin-top:12px">Datos precargados de 2025 y 2026 (calendario oficial del Ayuntamiento de
-      Madrid). Tus cambios se guardan en este navegador. <a href="#" id="resetHol">Restaurar valores por defecto</a>.</p>
-    <div class="warnbox" id="holWarn" style="display:none"></div>
+    <div class="months" id="months"></div>
+  </section>
+
+  <!-- 2. Resumen -->
+  <section class="card">
+    <h2><span class="n">2</span>Resumen del año</h2>
+    <p class="sub">Días de teletrabajo frente a días presenciales por periodo de cómputo, y si cumples el mínimo del 40&nbsp;%.</p>
+    <div class="totrow" id="totals"></div>
+    <div class="chart-legend">
+      <span><i class="dot" style="background:var(--tele)"></i>Teletrabajo (plan)</span>
+      <span><i class="dot" style="background:var(--office)"></i>Presencial (plan)</span>
+      <span><i class="dash"></i>Mínimo presencial exigido (40&nbsp;%)</span>
+    </div>
+    <div class="chart" id="chart"></div>
+    <div class="caps" id="caps"></div>
+    <details class="detail">
+      <summary>Ver tabla detallada por periodo</summary>
+      <div style="overflow-x:auto"><table id="periodTable">
+        <thead><tr><th>Periodo</th><th>Laborables</th><th>Ausencias</th><th>Efectivas</th><th>Presencial</th><th>Mín. exigido</th><th>Teletrabajo</th><th>Estado</th></tr></thead>
+        <tbody></tbody><tfoot></tfoot>
+      </table></div>
+      <p class="note" style="margin-top:10px">Mínimo presencial = ⌊0,40 × jornadas efectivas⌋. Cumples si tus días presenciales ≥ ese mínimo.</p>
+    </details>
   </section>
 
   <footer>
     Herramienta orientativa. Ante cualquier duda, prevalece la normativa e instrucciones oficiales de ANECA.
+    · <a href="configuracion.html">Configurar festivos</a>
   </footer>
 </div>
 
 <script>
 (function(){
   "use strict";
-  var TELEWORK_PRESENCIAL_RATE = 0.40; // 40% de jornadas efectivas = presencial mínimo
-  var STORE_KEY = "aneca-holidays-v1";
-  var MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-  var DOW = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-  var SUMMER_MONTHS = [5,6,7,8]; // jun,jul,ago,sep (0-index)
-
-  // ---- Festivos por defecto (Madrid capital). Fechas verificadas con el calendario oficial. ----
-  var DEFAULT_HOLIDAYS = {
-    2025:[
-      ["2025-01-01","Año Nuevo"],["2025-01-06","Reyes"],
-      ["2025-04-17","Jueves Santo"],["2025-04-18","Viernes Santo"],
-      ["2025-05-01","Fiesta del Trabajo"],["2025-05-02","Comunidad de Madrid"],
-      ["2025-05-15","San Isidro"],["2025-07-25","Santiago Apóstol"],
-      ["2025-08-15","Asunción"],["2025-11-01","Todos los Santos"],
-      ["2025-11-10","La Almudena (trasladado)"],["2025-12-06","Constitución"],
-      ["2025-12-08","Inmaculada"],["2025-12-25","Navidad"]
-    ],
-    2026:[
-      ["2026-01-01","Año Nuevo"],["2026-01-06","Reyes"],
-      ["2026-04-02","Jueves Santo"],["2026-04-03","Viernes Santo"],
-      ["2026-05-01","Fiesta del Trabajo"],["2026-05-02","Comunidad de Madrid"],
-      ["2026-05-15","San Isidro"],["2026-08-15","Asunción"],
-      ["2026-10-12","Fiesta Nacional"],["2026-11-02","Todos los Santos (trasladado)"],
-      ["2026-11-09","La Almudena"],["2026-12-07","Constitución (trasladado)"],
-      ["2026-12-08","Inmaculada"],["2026-12-25","Navidad"]
-    ]
+  var PRESENCIAL_RATE=0.40;
+  var STORE_HOL="aneca-holidays-v1", STORE_PRES="aneca-presencial-v1", STORE_ABS="aneca-absences-v1";
+  var MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  var DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], DOW_H=["L","M","X","J","V","S","D"];
+  var PERIODS=[
+    {label:"Ene",months:[0]},{label:"Feb",months:[1]},{label:"Mar",months:[2]},
+    {label:"Abr",months:[3]},{label:"May",months:[4]},
+    {label:"Verano",sub:"jun–sep",months:[5,6,7,8],summer:true},
+    {label:"Oct",months:[9]},{label:"Nov",months:[10]},{label:"Dic",months:[11]}
+  ];
+  var DEFAULT_HOLIDAYS={
+    2025:[["2025-01-01","Año Nuevo"],["2025-01-06","Reyes"],["2025-04-17","Jueves Santo"],["2025-04-18","Viernes Santo"],
+      ["2025-05-01","Fiesta del Trabajo"],["2025-05-02","Comunidad de Madrid"],["2025-05-15","San Isidro"],["2025-07-25","Santiago Apóstol"],
+      ["2025-08-15","Asunción"],["2025-11-01","Todos los Santos"],["2025-11-10","La Almudena (trasladado)"],["2025-12-06","Constitución"],
+      ["2025-12-08","Inmaculada"],["2025-12-25","Navidad"]],
+    2026:[["2026-01-01","Año Nuevo"],["2026-01-06","Reyes"],["2026-04-02","Jueves Santo"],["2026-04-03","Viernes Santo"],
+      ["2026-05-01","Fiesta del Trabajo"],["2026-05-02","Comunidad de Madrid"],["2026-05-15","San Isidro"],["2026-08-15","Asunción"],
+      ["2026-10-12","Fiesta Nacional"],["2026-11-02","Todos los Santos (trasladado)"],["2026-11-09","La Almudena"],["2026-12-07","Constitución (trasladado)"],
+      ["2026-12-08","Inmaculada"],["2026-12-25","Navidad"]]
   };
 
-  // ---- Almacén de festivos (localStorage) ----
-  var holidays = loadHolidays();
-  function loadHolidays(){
-    try{
-      var raw = localStorage.getItem(STORE_KEY);
-      if(raw){ var p = JSON.parse(raw); if(p && typeof p==="object") return p; }
-    }catch(e){}
-    return clone(DEFAULT_HOLIDAYS);
-  }
-  function saveHolidays(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(holidays)); }catch(e){} }
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function load(key,fb){ try{var r=localStorage.getItem(key);if(r){var p=JSON.parse(r);if(p)return p;}}catch(e){} return fb(); }
+  var holidays=load(STORE_HOL,function(){return clone(DEFAULT_HOLIDAYS);});
+  var presSet=new Set(load(STORE_PRES,function(){return [];}));
+  var absSet=new Set(load(STORE_ABS,function(){return [];}));
+  function savePres(){ try{localStorage.setItem(STORE_PRES,JSON.stringify(Array.from(presSet)));}catch(e){} }
+  function saveAbs(){ try{localStorage.setItem(STORE_ABS,JSON.stringify(Array.from(absSet)));}catch(e){} }
 
-  function holidaySet(year){
-    var arr = holidays[year] || [];
-    var m = {};
-    arr.forEach(function(h){ m[h[0]] = h[1]; });
-    return m;
-  }
+  function pad(n){return (n<10?"0":"")+n;}
+  function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+  function parseYMD(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+  function isWeekend(d){var g=d.getDay();return g===0||g===6;}
+  function holMap(y){var m={};(holidays[y]||[]).forEach(function(h){m[h[0]]=h[1];});return m;}
+  function isWorkdayStr(s,hm){var d=parseYMD(s);return !isWeekend(d)&&!hm[s];}
   function availableYears(){
-    var ys = Object.keys(holidays).map(Number).filter(function(n){return !isNaN(n);});
-    // Asegura un rango razonable aunque falten festivos
-    [2025,2026,2027].forEach(function(y){ if(ys.indexOf(y)<0) ys.push(y); });
-    ys.sort(function(a,b){return a-b;});
-    return ys;
+    var ys=Object.keys(holidays).map(Number).filter(function(n){return !isNaN(n);});
+    [2025,2026,2027].forEach(function(y){if(ys.indexOf(y)<0)ys.push(y);});
+    ys.sort(function(a,b){return a-b;}); return ys;
   }
 
-  // ---- Utilidades de fecha (todo en horario local, sin desfases de zona) ----
-  function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
-  function pad(n){ return (n<10?"0":"")+n; }
-  function parseYMD(s){ var p=s.split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
-  function isWeekend(d){ var g=d.getDay(); return g===0||g===6; }
-
-  // Cuenta jornadas laborables (L-V, no festivas) en [start,end] inclusive, intersecado con [pStart,pEnd].
-  function countWorkdays(start, end, holSet, pStart, pEnd){
-    var s = new Date(Math.max(start, pStart));
-    var e = new Date(Math.min(end, pEnd));
-    var n = 0, list = [];
-    var d = new Date(s);
-    while(d <= e){
-      if(!isWeekend(d) && !holSet[ymd(d)]){ n++; list.push(ymd(d)); }
-      d.setDate(d.getDate()+1);
-    }
-    return {count:n, days:list};
-  }
-
-  // ---- Estado UI ----
-  var state = { mode:"month", year:2026, month:6 }; // month 0-index; default se ajusta abajo
-  var absences = []; // {id, from, to, type}
-  var absSeq = 0;
-
-  // ---- Construcción de selects ----
-  var elYear = document.getElementById("year");
-  var elMonth = document.getElementById("month");
-  var elMonthWrap = document.getElementById("monthWrap");
-  var elPeriodHint = document.getElementById("periodHint");
+  var state={year:2026, tool:"pres"};
+  var elMonths=document.getElementById("months"), elYear=document.getElementById("year"), elSelInfo=document.getElementById("selInfo");
 
   function buildYearSelect(){
-    var ys = availableYears();
-    elYear.innerHTML = ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join("");
-    if(ys.indexOf(state.year)<0) state.year = ys[0];
-    elYear.value = state.year;
-  }
-  function buildMonthSelect(){
-    elMonth.innerHTML = MONTHS.map(function(m,i){return '<option value="'+i+'">'+m+'</option>';}).join("");
-    elMonth.value = state.month;
+    var ys=availableYears();
+    elYear.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join("");
+    if(ys.indexOf(state.year)<0)state.year=ys[0];
+    elYear.value=state.year;
   }
 
-  document.getElementById("modeMonth").addEventListener("click", function(){ setMode("month"); });
-  document.getElementById("modeSummer").addEventListener("click", function(){ setMode("summer"); });
-  function setMode(m){
-    state.mode = m;
-    document.getElementById("modeMonth").setAttribute("aria-pressed", m==="month");
-    document.getElementById("modeSummer").setAttribute("aria-pressed", m==="summer");
-    elMonthWrap.style.display = m==="month" ? "" : "none";
-    render();
-  }
-  elYear.addEventListener("change", function(){ state.year = +elYear.value; render(); renderHolidays(); });
-  elMonth.addEventListener("change", function(){ state.month = +elMonth.value; render(); });
+  // clase de estado de un día laborable
+  function dayState(ds){ if(presSet.has(ds))return "pres"; if(absSet.has(ds))return "abs"; return "tele"; }
 
-  // Rango del periodo seleccionado
-  function periodRange(){
-    if(state.mode==="summer"){
-      return { start:new Date(state.year,5,1), end:new Date(state.year,8,30),
-               label:"Verano "+state.year+" (jun–sep)" };
-    }
-    var start = new Date(state.year, state.month, 1);
-    var end = new Date(state.year, state.month+1, 0);
-    return { start:start, end:end, label:MONTHS[state.month]+" "+state.year };
-  }
-
-  // ---- Ausencias UI ----
-  var elAbsList = document.getElementById("absList");
-  document.getElementById("addAbs").addEventListener("click", function(){ addAbsence(); });
-
-  function addAbsence(from, to){
-    var pr = periodRange();
-    var id = ++absSeq;
-    absences.push({ id:id, from: from||ymd(pr.start), to: to||ymd(pr.start), type:"Vacaciones" });
-    renderAbsList();
-    render();
-  }
-  function renderAbsList(){
-    if(!absences.length){
-      elAbsList.innerHTML = '<p class="abs-note" style="margin-bottom:0">Sin ausencias. Añade vacaciones, bajas o permisos si los hay.</p>';
-      return;
-    }
-    elAbsList.innerHTML = "";
-    absences.forEach(function(a){
-      var row = document.createElement("div");
-      row.className = "abs-row";
-      row.innerHTML =
-        '<div><label>Tipo</label>'+
-          '<select data-f="type">'+
-            ["Vacaciones","Baja médica","Permiso / Asuntos propios","Otra ausencia"].map(function(t){
-              return '<option'+(t===a.type?' selected':'')+'>'+t+'</option>';}).join("")+
-          '</select></div>'+
-        '<div><label>Desde</label><input type="date" data-f="from" value="'+a.from+'"></div>'+
-        '<div><label>Hasta</label><input type="date" data-f="to" value="'+a.to+'"></div>'+
-        '<button class="btn-x" title="Eliminar" data-del="1">✕</button>';
-      row.querySelectorAll("[data-f]").forEach(function(inp){
-        inp.addEventListener("change", function(){
-          a[inp.getAttribute("data-f")] = inp.value;
-          render();
-        });
-      });
-      row.querySelector("[data-del]").addEventListener("click", function(){
-        absences = absences.filter(function(x){return x.id!==a.id;});
-        renderAbsList(); render();
-      });
-      elAbsList.appendChild(row);
-    });
-  }
-
-  // ---- Cálculo + render de resultados ----
-  var elResults = document.getElementById("results");
-
-  function compute(){
-    var pr = periodRange();
-    var holSet = holidaySet(state.year);
-    // Laborables del periodo
-    var wd = countWorkdays(pr.start, pr.end, holSet, pr.start, pr.end);
-    // Ausencias (laborables dentro del periodo), sin doble conteo de solapamientos
-    var absSet = {};
-    absences.forEach(function(a){
-      if(!a.from || !a.to) return;
-      var f = parseYMD(a.from), t = parseYMD(a.to);
-      if(t < f){ var tmp=f; f=t; t=tmp; }
-      var r = countWorkdays(f, t, holSet, pr.start, pr.end);
-      r.days.forEach(function(day){ absSet[day]=true; });
-    });
-    var absCount = Object.keys(absSet).length;
-    var effective = Math.max(0, wd.count - absCount);
-    var requiredOffice = Math.floor(TELEWORK_PRESENCIAL_RATE * effective); // redondeo a favor del teletrabajo
-    var teleworkMax = effective - requiredOffice;
-    return {
-      period:pr, holSet:holSet, workdays:wd.count, absCount:absCount,
-      effective:effective, requiredOffice:requiredOffice, teleworkMax:teleworkMax
-    };
-  }
-
-  function render(){
-    var c = compute();
-    var telePct = c.effective ? Math.round(c.teleworkMax/c.effective*100) : 0;
-    var offPct = c.effective ? 100 - telePct : 0;
-
-    // pistas del periodo
-    elPeriodHint.textContent = state.mode==="summer"
-      ? "Bloque de verano: junio, julio, agosto y septiembre se computan juntos (4 meses)."
-      : "Cada mes de octubre a mayo se computa por separado.";
-
-    var holChips = holidaysInPeriod(c);
-
-    elResults.innerHTML =
-      '<div class="headline">'+
-        '<b>'+c.requiredOffice+'</b><span>día'+(c.requiredOffice===1?'':'s')+' presenciales obligatorios</span>'+
-        '<span class="period">·&nbsp;'+c.period.label+'</span>'+
-      '</div>'+
-      '<div class="stat office"><div class="k">Presencial (mínimo)</div>'+
-        '<div class="v">'+c.requiredOffice+'</div><div class="s">40&nbsp;% de '+c.effective+' jornadas efectivas → redondeado a la baja</div></div>'+
-      '<div class="stat tele"><div class="k">Teletrabajo (máximo)</div>'+
-        '<div class="v">'+c.teleworkMax+'</div><div class="s">'+telePct+'&nbsp;% de tus jornadas efectivas</div></div>'+
-      '<div class="bar" title="'+offPct+'% presencial / '+telePct+'% teletrabajo">'+
-        '<i class="o" style="width:'+offPct+'%"></i><i class="t" style="width:'+telePct+'%"></i></div>'+
-      '<div class="legend">'+
-        '<span><i class="dot" style="background:var(--office)"></i>Presencial '+offPct+'%</span>'+
-        '<span><i class="dot" style="background:var(--tele)"></i>Teletrabajo '+telePct+'%</span></div>'+
-      '<details class="detail"><summary>Ver desglose del cálculo</summary>'+
-        '<div class="lines">'+
-          line("Días laborables (L–V, sin festivos)", c.workdays)+
-          line("− Ausencias (vacaciones, bajas, permisos…)", c.absCount)+
-          line("= Jornadas efectivas trabajadas", c.effective, true)+
-          line("Presencial obligatorio = ⌊40% × "+c.effective+"⌋", c.requiredOffice)+
-          line("Teletrabajo disponible", c.teleworkMax)+
-        '</div>'+
-        (holChips ? '<div class="chips"><span class="chip" style="border-style:dashed">Festivos en el periodo:</span>'+holChips+'</div>' : '')+
-      '</details>';
-  }
-
-  function line(k,v,total){
-    return '<div class="li'+(total?' total':'')+'"><span>'+k+'</span><span>'+v+'</span></div>';
-  }
-
-  function holidaysInPeriod(c){
-    var out = [];
-    Object.keys(c.holSet).forEach(function(day){
-      var d = parseYMD(day);
-      if(d>=c.period.start && d<=c.period.end && !isWeekend(d)){
-        out.push({d:d, day:day, name:c.holSet[day]});
+  function renderCalendar(){
+    var y=state.year, hm=holMap(y), summer={5:1,6:1,7:1,8:1}, html="";
+    for(var m=0;m<12;m++){
+      html+='<div class="mon'+(summer[m]?' summer':'')+'">';
+      html+='<div class="mh"><b>'+MONTHS[m]+'</b>'+(summer[m]?'<span class="tag">verano</span>':'')+'</div>';
+      html+='<div class="dow">'+DOW_H.map(function(d){return '<span>'+d+'</span>';}).join("")+'</div><div class="days">';
+      var offset=(new Date(y,m,1).getDay()+6)%7;
+      for(var i=0;i<offset;i++)html+='<div class="day pad"></div>';
+      var dim=new Date(y,m+1,0).getDate();
+      for(var dd=1;dd<=dim;dd++){
+        var ds=y+"-"+pad(m+1)+"-"+pad(dd), d=new Date(y,m,dd);
+        if(hm[ds]) html+='<div class="day ho" data-date="'+ds+'" title="'+esc(hm[ds])+'">'+dd+'</div>';
+        else if(isWeekend(d)) html+='<div class="day we" data-date="'+ds+'">'+dd+'</div>';
+        else html+='<div class="day '+dayState(ds)+'" data-date="'+ds+'" data-work="1">'+dd+'</div>';
       }
+      html+='</div></div>';
+    }
+    elMonths.innerHTML=html;
+  }
+
+  // ---- Pincel de marcado (arrastre ratón/táctil) ----
+  document.getElementById("tools").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-tool]"); if(!b)return;
+    state.tool=b.dataset.tool;
+    this.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x===b);});
+  });
+
+  var drag=null;
+  elMonths.addEventListener("pointerdown",function(e){
+    var cell=e.target.closest("[data-date]"); if(!cell||!cell.dataset.work)return;
+    e.preventDefault(); try{elMonths.setPointerCapture(e.pointerId);}catch(_){}
+    drag={anchor:cell.dataset.date, mode:state.tool, lastTo:cell.dataset.date};
+    previewTo(cell.dataset.date);
+  });
+  elMonths.addEventListener("pointermove",function(e){
+    if(!drag)return;
+    var el=document.elementFromPoint(e.clientX,e.clientY);
+    var cell=el&&el.closest?el.closest("[data-date]"):null;
+    if(cell)previewTo(cell.dataset.date);
+  });
+  function endDrag(){ if(!drag)return; var d=drag; drag=null; commit(d.lastTo,d); }
+  elMonths.addEventListener("pointerup",endDrag);
+  elMonths.addEventListener("pointercancel",endDrag);
+  window.addEventListener("pointerup",endDrag);
+
+  function eachInRange(a,b,cb){
+    var lo=a<b?a:b, hi=a<b?b:a, cur=parseYMD(lo), end=parseYMD(hi);
+    while(cur<=end){ cb(ymd(cur)); cur.setDate(cur.getDate()+1); }
+  }
+  function preview(d){ // devuelve {pres:Set,abs:Set} temporales
+    var hm=holMap(state.year), p=new Set(presSet), a=new Set(absSet);
+    eachInRange(d.anchor,d.lastTo,function(s){
+      if(!isWorkdayStr(s,hm))return;
+      if(d.mode==="pres"){p.add(s);a.delete(s);}
+      else if(d.mode==="abs"){a.add(s);p.delete(s);}
+      else{p.delete(s);a.delete(s);}
     });
-    out.sort(function(a,b){return a.d-b.d;});
-    return out.map(function(h){
-      var d=h.d;
-      return '<span class="chip">'+pad(d.getDate())+"/"+pad(d.getMonth()+1)+" · "+h.name+'</span>';
-    }).join("");
+    return {pres:p,abs:a};
+  }
+  function previewTo(toStr){
+    drag.lastTo=toStr;
+    var t=preview(drag);
+    elMonths.querySelectorAll(".day[data-work]").forEach(function(c){
+      var ds=c.dataset.date, st=t.pres.has(ds)?"pres":(t.abs.has(ds)?"abs":"tele");
+      c.classList.remove("pres","abs","tele"); c.classList.add(st);
+    });
+    renderOutputs(t.pres,t.abs);
+  }
+  function commit(toStr,d){
+    var t=preview(d); presSet=t.pres; absSet=t.abs;
+    savePres(); saveAbs(); renderCalendar(); renderOutputs();
   }
 
-  // ---- Editor de festivos ----
-  var elHolList = document.getElementById("holList");
-  var elHolYearLabel = document.getElementById("holYearLabel");
-  var elHolWarn = document.getElementById("holWarn");
+  document.getElementById("clearSel").addEventListener("click",function(){
+    var pre=state.year+"-";
+    [presSet,absSet].forEach(function(S){ S.forEach(function(s){ if(s.indexOf(pre)===0)S.delete(s); }); });
+    savePres(); saveAbs(); renderCalendar(); renderOutputs();
+  });
 
-  function renderHolidays(){
-    var y = state.year;
-    elHolYearLabel.textContent = "Mostrando festivos de "+y+". Se aplican al periodo seleccionado.";
-    var arr = (holidays[y]||[]).slice().sort(function(a,b){return a[0]<b[0]?-1:1;});
-    if(!arr.length){
-      elHolList.innerHTML = '<p class="abs-note" style="margin:0">No hay festivos guardados para '+y+'. Añádelos abajo.</p>';
-    }else{
-      elHolList.innerHTML = "";
-      arr.forEach(function(h){
-        var d = parseYMD(h[0]);
-        var el = document.createElement("div");
-        el.className = "hol";
-        el.innerHTML = '<b>'+pad(d.getDate())+"/"+pad(d.getMonth()+1)+'</b> <span>'+DOW[d.getDay()].slice(0,3)+'</span> '+
-          escapeHtml(h[1])+' <button title="Eliminar">✕</button>';
-        el.querySelector("button").addEventListener("click", function(){
-          holidays[y] = holidays[y].filter(function(x){return x[0]!==h[0];});
-          saveHolidays(); renderHolidays(); render();
-        });
-        elHolList.appendChild(el);
+  // ==== Cálculo ====
+  function computePeriods(pS,aS){
+    pS=pS||presSet; aS=aS||absSet;
+    var y=state.year, hm=holMap(y);
+    return PERIODS.map(function(P){
+      var work=0,abs=0,pres=0;
+      P.months.forEach(function(m){
+        var dim=new Date(y,m+1,0).getDate();
+        for(var dd=1;dd<=dim;dd++){
+          var ds=y+"-"+pad(m+1)+"-"+pad(dd);
+          if(isWorkdayStr(ds,hm)){ work++; if(aS.has(ds))abs++; else if(pS.has(ds))pres++; }
+        }
       });
-    }
-    // Aviso si el año seleccionado no tiene festivos precargados
-    if(!(holidays[y] && holidays[y].length) && !DEFAULT_HOLIDAYS[y]){
-      elHolWarn.style.display = "";
-      elHolWarn.innerHTML = "No hay calendario oficial precargado para <b>"+y+"</b>. Introduce manualmente los festivos de Madrid capital para que el cálculo sea correcto.";
-    }else{
-      elHolWarn.style.display = "none";
-    }
+      var eff=Math.max(0,work-abs);
+      var minOff=Math.floor(PRESENCIAL_RATE*eff);
+      var tele=eff-pres;
+      return {label:P.label,sub:P.sub,summer:!!P.summer,work:work,abs:abs,eff:eff,pres:pres,minOff:minOff,tele:tele,ok:pres>=minOff};
+    });
   }
 
-  document.getElementById("addHol").addEventListener("click", function(){
-    var date = document.getElementById("holDate").value;
-    var name = document.getElementById("holName").value.trim() || "Festivo";
-    if(!date) return;
-    var y = new Date(date.slice(0,4),0,1).getFullYear();
-    y = +date.slice(0,4);
-    if(!holidays[y]) holidays[y] = [];
-    if(holidays[y].some(function(h){return h[0]===date;})){
-      // reemplaza nombre si ya existe
-      holidays[y] = holidays[y].map(function(h){return h[0]===date?[date,name]:h;});
-    }else{
-      holidays[y].push([date,name]);
-    }
-    saveHolidays();
-    document.getElementById("holName").value = "";
-    buildYearSelect(); elYear.value = state.year;
-    renderHolidays(); render();
-  });
+  var elTotals=document.getElementById("totals"),elChart=document.getElementById("chart"),elCaps=document.getElementById("caps");
+  var tbody=document.querySelector("#periodTable tbody"),tfoot=document.querySelector("#periodTable tfoot");
 
-  document.getElementById("resetHol").addEventListener("click", function(e){
-    e.preventDefault();
-    if(confirm("¿Restaurar los festivos por defecto de 2025 y 2026? Se perderán tus cambios.")){
-      holidays = clone(DEFAULT_HOLIDAYS);
-      saveHolidays();
-      buildYearSelect(); elYear.value = state.year;
-      renderHolidays(); render();
-    }
-  });
+  function renderOutputs(pS,aS){
+    var P=computePeriods(pS,aS);
+    var totEff=0,totPres=0,totTele=0,totWork=0,totAbs=0,totMin=0,okCount=0,maxEff=1;
+    P.forEach(function(p){totEff+=p.eff;totPres+=p.pres;totTele+=p.tele;totWork+=p.work;totAbs+=p.abs;totMin+=p.minOff;if(p.ok)okCount++;if(p.eff>maxEff)maxEff=p.eff;});
+    var allOk=okCount===P.length;
 
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g,function(c){
-    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+    var telePct=totEff?Math.round(totTele/totEff*100):0;
+    elTotals.innerHTML=
+      '<div class="stat tele"><div class="k">Teletrabajo (plan)</div><div class="v">'+totTele+'</div><div class="s">'+telePct+'% de '+totEff+' efectivas</div></div>'+
+      '<div class="stat office"><div class="k">Presencial (plan)</div><div class="v">'+totPres+'</div><div class="s">mínimo exigido: '+totMin+'</div></div>'+
+      '<div class="stat"><div class="k">Ausencias</div><div class="v">'+totAbs+'</div><div class="s">sobre '+totWork+' laborables</div></div>'+
+      '<div class="stat state"><div class="k">Cumplimiento</div><div class="v '+(allOk?"ok":"bad")+'">'+okCount+'/'+P.length+'</div><div class="s">'+(allOk?"cumples todos los periodos":"revisa periodos en rojo")+'</div></div>';
 
-  // ---- Init ----
+    var bars="",caps="";
+    P.forEach(function(p){
+      var h=Math.round(p.eff/maxEff*100);
+      var presH=p.eff?Math.round(p.pres/p.eff*100):0, teleH=100-presH;
+      var minH=p.eff?Math.round(p.minOff/p.eff*100):0;
+      var title=p.label+(p.sub?" ("+p.sub+")":"")+": "+p.tele+" teletrabajo · "+p.pres+" presencial (mín. "+p.minOff+") · "+p.eff+" efectivas";
+      bars+='<div class="col'+(p.summer?' summer':'')+'"><div class="barwrap" style="height:'+Math.max(h,3)+'%" title="'+esc(title)+'">'+
+        '<div class="bar" style="height:100%">'+
+          '<div class="seg tele'+(teleH<14?' small':'')+'" style="height:'+teleH+'%">'+(p.tele||"")+'</div>'+
+          '<div class="seg office'+(presH<14?' small':'')+'" style="height:'+presH+'%">'+(p.pres||"")+'</div>'+
+        '</div>'+(p.eff?'<div class="minmark" style="bottom:'+minH+'%"></div>':'')+'</div></div>';
+      caps+='<div class="cap'+(p.summer?' summer':'')+'"><b>'+p.label+'</b><span class="badge2 '+(p.ok?"ok":"bad")+'">'+(p.ok?"✓":"✗")+'</span></div>';
+    });
+    elChart.innerHTML=bars; elCaps.innerHTML=caps;
+
+    tbody.innerHTML=P.map(function(p){
+      var estado=p.ok?'<span class="ok">✓ cumple</span>':'<span class="bad">✗ faltan '+(p.minOff-p.pres)+'</span>';
+      return '<tr'+(p.summer?' class="summer"':'')+'><td>'+p.label+(p.sub?' <span class="note">('+p.sub+')</span>':'')+
+        '</td><td>'+p.work+'</td><td>'+p.abs+'</td><td>'+p.eff+'</td><td>'+p.pres+'</td><td>'+p.minOff+'</td><td>'+p.tele+'</td><td style="text-align:right">'+estado+'</td></tr>';
+    }).join("");
+    tfoot.innerHTML='<tr><td>Total año</td><td>'+totWork+'</td><td>'+totAbs+'</td><td>'+totEff+'</td><td>'+totPres+'</td><td>'+totMin+'</td><td>'+totTele+'</td><td style="text-align:right">'+(allOk?'<span class="ok">✓</span>':'<span class="bad">'+okCount+'/'+P.length+'</span>')+'</td></tr>';
+
+    var pre=state.year+"-",np=0,na=0;
+    (pS||presSet).forEach(function(s){if(s.indexOf(pre)===0)np++;});
+    (aS||absSet).forEach(function(s){if(s.indexOf(pre)===0)na++;});
+    elSelInfo.innerHTML='<b>'+np+'</b> presenciales · <b>'+na+'</b> ausencias en '+state.year;
+  }
+
+  elYear.addEventListener("change",function(){state.year=+elYear.value;renderCalendar();renderOutputs();});
+
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
   (function init(){
-    // Año/mes por defecto: el año con festivos más cercano y el mes actual si aplica
-    var years = availableYears();
-    var thisYear = 2026; // valor de arranque; el usuario puede cambiarlo
-    state.year = years.indexOf(thisYear)>=0 ? thisYear : years[years.length-1];
-    state.month = 0;
-    buildYearSelect();
-    buildMonthSelect();
-    setMode("month");
-    renderAbsList();
-    renderHolidays();
-    render();
+    var ys=availableYears();
+    state.year=ys.indexOf(2026)>=0?2026:ys[ys.length-1];
+    buildYearSelect(); renderCalendar(); renderOutputs();
   })();
 })();
 </script>

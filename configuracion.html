@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración · Festivos de Madrid · ANECA</title>
+<meta name="description" content="Configura los festivos de Madrid capital que usa la calculadora de teletrabajo de ANECA.">
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#16202e; --muted:#5c6b7f;
+    --line:#e3e8f0; --brand:#2f6fed; --brand-ink:#1b4bb8;
+    --holiday:#8b5cf6; --warn:#c23b3b;
+    --shadow:0 1px 2px rgba(16,32,54,.06),0 8px 24px rgba(16,32,54,.06); --r:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#0e1420;--card:#161f2e;--ink:#eef2f8;--muted:#9aa8bd;--line:#263245;
+      --brand:#5b8dff;--brand-ink:#8fb0ff;--holiday:#a888fb;--warn:#ff7b7b;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);}
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:24px 16px 64px}
+  .wrap{max-width:820px;margin:0 auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 18px}
+  .back{font-size:.85rem;font-weight:600;text-decoration:none;color:var(--brand-ink);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+  .back:hover{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent)}
+  .badge{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--brand-ink);background:color-mix(in srgb,var(--brand) 14%,transparent);padding:4px 10px;border-radius:999px}
+  h1{font-size:1.5rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
+  .lead{margin:0 0 20px;color:var(--muted);max-width:64ch}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+  .card h2{font-size:1.05rem;margin:0 0 4px}
+  .card .sub{color:var(--muted);font-size:.88rem;margin:0 0 14px}
+  label{display:block;font-size:.82rem;font-weight:600;color:var(--muted);margin:0 0 6px}
+  select,input[type=date],input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+    background:var(--bg);color:var(--ink);font:inherit;font-size:.95rem}
+  select:focus,input:focus{outline:2px solid color-mix(in srgb,var(--brand) 40%,transparent);border-color:var(--brand)}
+  .btn{border:0;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;padding:9px 14px}
+  .btn-ghost{background:transparent;color:var(--brand-ink);border:1px dashed var(--line)}
+  .btn-ghost:hover{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent)}
+  .yearsel{max-width:200px;margin-bottom:16px}
+  .hol-list{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 18px}
+  .hol{display:inline-flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
+    border-radius:10px;padding:6px 8px 6px 12px;font-size:.85rem}
+  .hol .sw{width:10px;height:10px;border-radius:3px;background:var(--holiday);display:inline-block}
+  .hol b{font-variant-numeric:tabular-nums} .hol span{color:var(--muted)}
+  .hol button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px}
+  .hol button:hover{color:var(--warn)}
+  .add-hol{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:end}
+  @media(max-width:560px){.add-hol{grid-template-columns:1fr 1fr}.add-hol .btn{grid-column:1/-1}}
+  .note{font-size:.82rem;color:var(--muted)}
+  a{color:var(--brand-ink)}
+  .warnbox{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);
+    color:var(--ink);border-radius:10px;padding:10px 14px;font-size:.86rem;margin-top:12px}
+  .saved{font-size:.82rem;color:var(--muted);margin-left:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <span class="badge">ANECA · Configuración</span>
+    <a class="back" href="index.html">← Volver al planificador</a>
+  </div>
+  <h1>Festivos de Madrid capital</h1>
+  <p class="lead">Estos son los días festivos que la calculadora descuenta de las jornadas laborables. Vienen
+  precargados los calendarios oficiales del Ayuntamiento de Madrid para 2025 y 2026; puedes editarlos y añadir
+  otros años. Los cambios se guardan en este navegador y se aplican automáticamente al planificador.</p>
+
+  <section class="card">
+    <div class="yearsel"><label for="year">Año</label><select id="year"></select></div>
+    <h2>Festivos de <span id="yl">2026</span></h2>
+    <p class="sub">Pulsa la ✕ para eliminar un festivo.</p>
+    <div class="hol-list" id="holList"></div>
+    <div class="add-hol">
+      <div><label for="holDate">Fecha</label><input type="date" id="holDate"></div>
+      <div><label for="holName">Nombre</label><input type="text" id="holName" placeholder="p. ej. San Isidro"></div>
+      <button class="btn btn-ghost" id="addHol">+ Añadir festivo</button>
+    </div>
+    <div class="warnbox" id="holWarn" style="display:none"></div>
+    <p class="note" style="margin-top:16px">
+      <a href="#" id="resetHol">Restaurar valores por defecto (2025 y 2026)</a>
+      <span class="saved" id="saved"></span>
+    </p>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var STORE_HOL="aneca-holidays-v1";
+  var DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  var DEFAULT_HOLIDAYS={
+    2025:[["2025-01-01","Año Nuevo"],["2025-01-06","Reyes"],["2025-04-17","Jueves Santo"],["2025-04-18","Viernes Santo"],
+      ["2025-05-01","Fiesta del Trabajo"],["2025-05-02","Comunidad de Madrid"],["2025-05-15","San Isidro"],["2025-07-25","Santiago Apóstol"],
+      ["2025-08-15","Asunción"],["2025-11-01","Todos los Santos"],["2025-11-10","La Almudena (trasladado)"],["2025-12-06","Constitución"],
+      ["2025-12-08","Inmaculada"],["2025-12-25","Navidad"]],
+    2026:[["2026-01-01","Año Nuevo"],["2026-01-06","Reyes"],["2026-04-02","Jueves Santo"],["2026-04-03","Viernes Santo"],
+      ["2026-05-01","Fiesta del Trabajo"],["2026-05-02","Comunidad de Madrid"],["2026-05-15","San Isidro"],["2026-08-15","Asunción"],
+      ["2026-10-12","Fiesta Nacional"],["2026-11-02","Todos los Santos (trasladado)"],["2026-11-09","La Almudena"],["2026-12-07","Constitución (trasladado)"],
+      ["2026-12-08","Inmaculada"],["2026-12-25","Navidad"]]
+  };
+  function clone(o){return JSON.parse(JSON.stringify(o));}
+  function load(){ try{var r=localStorage.getItem(STORE_HOL);if(r){var p=JSON.parse(r);if(p)return p;}}catch(e){} return clone(DEFAULT_HOLIDAYS); }
+  function save(){ try{localStorage.setItem(STORE_HOL,JSON.stringify(holidays));flash();}catch(e){} }
+  var holidays=load();
+
+  function pad(n){return (n<10?"0":"")+n;}
+  function parseYMD(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+  function years(){
+    var ys=Object.keys(holidays).map(Number).filter(function(n){return !isNaN(n);});
+    [2025,2026,2027].forEach(function(y){if(ys.indexOf(y)<0)ys.push(y);});
+    ys.sort(function(a,b){return a-b;}); return ys;
+  }
+  var state={year:2026};
+  var elYear=document.getElementById("year"),elList=document.getElementById("holList"),
+      elYL=document.getElementById("yl"),elWarn=document.getElementById("holWarn"),elSaved=document.getElementById("saved");
+
+  function buildYears(){
+    var ys=years();
+    elYear.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join("");
+    if(ys.indexOf(state.year)<0)state.year=ys[0];
+    elYear.value=state.year;
+  }
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function flash(){ elSaved.textContent="✓ guardado"; clearTimeout(flash._t); flash._t=setTimeout(function(){elSaved.textContent="";},1500); }
+
+  function render(){
+    var y=state.year; elYL.textContent=y;
+    var arr=(holidays[y]||[]).slice().sort(function(a,b){return a[0]<b[0]?-1:1;});
+    if(!arr.length){ elList.innerHTML='<p class="note" style="margin:0">No hay festivos guardados para '+y+'.</p>'; }
+    else{
+      elList.innerHTML="";
+      arr.forEach(function(h){
+        var d=parseYMD(h[0]), el=document.createElement("div"); el.className="hol";
+        el.innerHTML='<i class="sw"></i><b>'+pad(d.getDate())+"/"+pad(d.getMonth()+1)+'</b> <span>'+DOW[d.getDay()]+'</span> '+esc(h[1])+' <button title="Eliminar">✕</button>';
+        el.querySelector("button").addEventListener("click",function(){
+          holidays[y]=holidays[y].filter(function(x){return x[0]!==h[0];}); save(); render();
+        });
+        elList.appendChild(el);
+      });
+    }
+    if(!(holidays[y]&&holidays[y].length)&&!DEFAULT_HOLIDAYS[y]){
+      elWarn.style.display=""; elWarn.innerHTML="No hay calendario precargado para <b>"+y+"</b>. Añade los festivos de Madrid capital para que el cálculo sea correcto.";
+    }else elWarn.style.display="none";
+  }
+
+  elYear.addEventListener("change",function(){state.year=+elYear.value;render();});
+  document.getElementById("addHol").addEventListener("click",function(){
+    var date=document.getElementById("holDate").value, name=document.getElementById("holName").value.trim()||"Festivo";
+    if(!date)return;
+    var y=+date.slice(0,4); if(!holidays[y])holidays[y]=[];
+    if(holidays[y].some(function(h){return h[0]===date;})) holidays[y]=holidays[y].map(function(h){return h[0]===date?[date,name]:h;});
+    else holidays[y].push([date,name]);
+    save(); document.getElementById("holName").value=""; state.year=y; buildYears(); render();
+  });
+  document.getElementById("resetHol").addEventListener("click",function(e){
+    e.preventDefault();
+    if(confirm("¿Restaurar los festivos por defecto de 2025 y 2026? Se perderán tus cambios.")){
+      holidays=clone(DEFAULT_HOLIDAYS); save(); buildYears(); render();
+    }
+  });
+
+  buildYears(); render();
+})();
+</script>
+</body>
+</html>
