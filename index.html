@@ -187,6 +187,18 @@
   #report .rok{color:#1f7a4d;font-weight:700}#report .rbad{color:#b3261e;font-weight:700}
   #report ul.ranges{margin:6px 0 0;padding-left:18px}#report ul.ranges li{margin:2px 0}
   #report .daylist{color:#1a2432}
+  #report .rcal{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+  @media(max-width:620px){#report .rcal{grid-template-columns:repeat(2,1fr)}}
+  #report .rmon{border:1px solid #e3e8f0;border-radius:7px;padding:6px 7px;page-break-inside:avoid}
+  #report .rmon b{font-size:.72rem;display:block;margin:0 0 3px;color:#111}
+  #report .rdow,#report .rdays{display:grid;grid-template-columns:repeat(7,1fr);gap:1.5px}
+  #report .rdow span{font-size:.5rem;color:#9aa6b4;text-align:center;font-weight:700}
+  #report .rd{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:.52rem;border-radius:3px;color:#fff}
+  #report .rd.pad{visibility:hidden}
+  #report .rd.we{background:#eef1f5;color:#aeb7c4}
+  #report .rd.off{background:#f6f7f9;color:#cfd6df;text-decoration:line-through}
+  #report .rd.tele{background:#2fa36b}#report .rd.pres{background:#e8813a}
+  #report .rd.abs{background:#6d7c93}#report .rd.twob{background:#0ea5b7}#report .rd.ho{background:#8b5cf6}
   #report .foot{margin-top:22px;padding-top:10px;border-top:1px solid #e3e8f0;color:#5c6b7f;font-size:.72rem}
 
   @media print{
@@ -653,6 +665,34 @@
     return out;
   }
   function dl(arr){ return arr.length ? arr.join(", ") : "—"; }
+  function buildMiniCal(y){
+    var hm=holMap(y), ob=curOblig, out='<div class="rcal">';
+    for(var m=0;m<12;m++){
+      out+='<div class="rmon"><b>'+MONTHS[m]+'</b><div class="rdow">'+DOW_H.map(function(d){return '<span>'+d+'</span>';}).join('')+'</div><div class="rdays">';
+      var offset=(new Date(y,m,1).getDay()+6)%7;
+      for(var i=0;i<offset;i++)out+='<div class="rd pad"></div>';
+      var dim=new Date(y,m+1,0).getDate();
+      for(var dd=1;dd<=dim;dd++){
+        var ds=y+'-'+pad(m+1)+'-'+pad(dd), d=new Date(y,m,dd), cl;
+        if(beforeStart(ds))cl='off';
+        else if(hm[ds])cl='ho';
+        else if(isWeekend(d))cl='we';
+        else cl=absSet.has(ds)?'abs':(ob[ds]?'twob':(presSet.has(ds)?'pres':'tele'));
+        out+='<div class="rd '+cl+'">'+dd+'</div>';
+      }
+      out+='</div></div>';
+    }
+    return out+'</div>';
+  }
+  function reportLegend(withHol){
+    return '<div class="rlegend">'+
+      '<span><i class="rdot" style="background:#2fa36b"></i>Teletrabajo</span>'+
+      '<span><i class="rdot" style="background:#e8813a"></i>Presencial</span>'+
+      '<span><i class="rdot" style="background:#6d7c93"></i>Ausencia</span>'+
+      '<span><i class="rdot" style="background:#0ea5b7"></i>T. obligatorio</span>'+
+      (withHol?'<span><i class="rdot" style="background:#8b5cf6"></i>Festivo</span><span><i class="rdot" style="background:#eef1f5;border:1px solid #e3e8f0"></i>Fin de semana</span>':'')+
+    '</div>';
+  }
 
   function buildReport(){
     var y=state.year, name=(document.getElementById("repName").value||"").trim();
@@ -679,6 +719,10 @@
       '<div class="rs"><div class="k">Cumplimiento</div><div class="v '+(allOk?'rok':'rbad')+'">'+ok+'/'+app+'</div><div class="s">'+(allOk?'cumple':'revisar')+'</div></div>'+
     '</div>';
 
+    h+='<h2>Calendario anual</h2>';
+    h+=reportLegend(true);
+    h+=buildMiniCal(y);
+
     h+='<h2>Detalle por periodo de cómputo</h2>';
     h+='<table><thead><tr><th>Periodo</th><th>Laborables</th><th>Ausencias</th><th>T. oblig.</th><th>Efectivas</th><th>Presencial</th><th>Mín.</th><th>Teletrabajo</th><th>Estado</th></tr></thead><tbody>';
     P.forEach(function(p){
@@ -703,11 +747,7 @@
     }
     h+='</tbody></table>';
 
-    h+='<div class="rlegend" style="margin-top:12px">'+
-      '<span><i class="rdot" style="background:#2fa36b"></i>Teletrabajo</span>'+
-      '<span><i class="rdot" style="background:#e8813a"></i>Presencial</span>'+
-      '<span><i class="rdot" style="background:#6d7c93"></i>Ausencia</span>'+
-      '<span><i class="rdot" style="background:#0ea5b7"></i>Teletrabajo obligatorio</span></div>';
+    h+=reportLegend(false);
 
     h+='<div class="foot">Regla aplicada: mínimo presencial = ⌊0,40 × jornadas efectivas⌋ por periodo (jun–sep como bloque único). '+
       'El teletrabajo obligatorio (Navidad y Semana Santa) y los festivos de Madrid capital no computan como jornada efectiva. '+
