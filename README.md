@@ -13,10 +13,19 @@ En el calendario anual marcas, con un pincel y **clic o arrastre** (ratón o ded
 - **Presencial** (naranja): días en los que vas a la oficina (no teletrabajas).
 - **Ausencia** (gris): vacaciones, bajas, permisos, asuntos propios…
 - **Teletrabajo** (verde): el resto de días laborables, mostrado automáticamente.
+- **Teletrabajo obligatorio** (teal): semanas de **Navidad y Semana Santa**; son teletrabajo por norma de ANECA
+  y **no computan** (no suben el mínimo presencial ni pueden marcarse como presenciales).
 - **Festivo Madrid** (violeta) y **fin de semana**: no computan como jornada.
 
+Además:
+
+- **Plantilla semanal**: eliges los días presenciales de una semana tipo (p. ej. lunes y martes) y se
+  prerrellena todo el año, conservando ausencias y semanas obligatorias.
+- **Fecha de inicio** (opcional): si te incorporas a mitad de año, los días anteriores quedan fuera y se
+  recomputan los periodos del resto del año. Si se deja vacía, se asume el año completo.
+
 El **resumen anual** muestra un histograma de teletrabajo frente a presencial por periodo, con la línea
-del mínimo exigido, y marca ✓/✗ si cumples en cada periodo.
+del mínimo exigido, y marca ✓/✗ si cumples en cada periodo (los periodos anteriores al alta aparecen como «—»).
 
 ## Regla que aplica
 
@@ -27,11 +36,15 @@ del mínimo exigido, y marca ✓/✗ si cumples en cada periodo.
 - **Ventanas de cómputo:** cada mes de octubre a mayo por separado; **junio, julio, agosto y septiembre se computan
   juntos** como un único bloque de verano de 4 meses.
 
-## Festivos
+## Configuración (`configuracion.html`)
 
-Precargados los calendarios oficiales del Ayuntamiento de Madrid para **2025 y 2026**.
-Se editan en **`configuracion.html`** (se guardan en el navegador), de modo que añadir años futuros
-o corregir cualquier fecha no requiere tocar el código.
+- **Festivos de Madrid capital**: precargados los calendarios oficiales del Ayuntamiento de Madrid para
+  **2025 y 2026**; editables y ampliables a otros años.
+- **Semanas de teletrabajo obligatorio**: Semana Santa se calcula automáticamente (a partir de la Pascua) y
+  Navidad viene con rangos por defecto; ambos son ajustables por año.
+
+Todo se guarda en el navegador (localStorage), de modo que añadir años futuros o corregir cualquier fecha
+no requiere tocar el código.
 
 ## Publicar en GitHub Pages
 

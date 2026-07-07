@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadora de Teletrabajo · ANECA</title>
-<meta name="description" content="Planifica en un calendario anual tus días presenciales, ausencias y teletrabajo en ANECA. Comprueba el 40% de jornadas efectivas presenciales con los festivos de Madrid capital.">
+<meta name="description" content="Planifica en un calendario anual tus días presenciales, ausencias y teletrabajo en ANECA. Plantilla semanal, semanas de teletrabajo obligatorio (Navidad y Semana Santa) y comprobación del 40% con los festivos de Madrid capital.">
 <style>
   :root{
     --bg:#f4f6fb; --card:#ffffff; --ink:#16202e; --muted:#5c6b7f;
     --line:#e3e8f0; --brand:#2f6fed; --brand-ink:#1b4bb8;
     --office:#e8813a; --office-soft:#fdeede;      /* presencial */
     --tele:#2fa36b; --tele-soft:#e6f5ed;          /* teletrabajo */
+    --twob:#0ea5b7; --twob-soft:#e2f5f8;          /* teletrabajo obligatorio */
     --absence:#6d7c93; --absence-soft:#eceff4;    /* ausencia */
     --holiday:#8b5cf6; --holiday-soft:#efeafe;    /* festivo */
     --ok:#2fa36b; --warn:#c23b3b;
@@ -22,21 +23,21 @@
       --line:#263245; --brand:#5b8dff; --brand-ink:#8fb0ff;
       --office:#f0955a; --office-soft:#3a2415;
       --tele:#4cc98c; --tele-soft:#12321f;
+      --twob:#2dd4bf; --twob-soft:#0f2f2e;
       --absence:#8697ad; --absence-soft:#212b3a;
       --holiday:#a888fb; --holiday-soft:#241a3d;
       --ok:#4cc98c; --warn:#ff7b7b;
       --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
     }
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);
     font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;padding:24px 16px 64px}
   .wrap{max-width:1040px;margin:0 auto}
   header.page{margin:8px 0 24px}
   header.page h1{font-size:1.7rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
-  header.page p{margin:0;color:var(--muted);max-width:66ch}
+  header.page p{margin:0;color:var(--muted);max-width:68ch}
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
   .badge{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
     color:var(--brand-ink);background:color-mix(in srgb,var(--brand) 14%,transparent);padding:4px 10px;border-radius:999px}
@@ -54,9 +55,11 @@
   .btn{border:0;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;padding:9px 14px}
   .btn-ghost{background:transparent;color:var(--brand-ink);border:1px dashed var(--line)}
   .btn-ghost:hover{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent)}
+  .btn-solid{background:var(--brand);color:#fff}
+  .btn-solid:hover{background:var(--brand-ink)}
 
   .controls{display:flex;flex-wrap:wrap;gap:16px 22px;align-items:flex-end;margin-bottom:16px}
-  .paint{display:flex;flex-direction:column;gap:6px}
+  .field{display:flex;flex-direction:column;gap:6px}
   .seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap}
   .seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;font-size:.86rem;
     padding:8px 12px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
@@ -64,6 +67,16 @@
   .seg button[aria-pressed=true]{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);outline:2px solid var(--brand)}
   .spacer{flex:1}
   .selinfo{font-size:.86rem;color:var(--muted);align-self:center}
+
+  /* plantilla semanal */
+  .tmpl{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+  .tmpl .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .tmpl b{font-size:.9rem}
+  .wd-chips{display:inline-flex;gap:5px}
+  .wd-chips button{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--card);
+    color:var(--muted);font:inherit;font-weight:700;cursor:pointer}
+  .wd-chips button[aria-pressed=true]{background:var(--office);border-color:var(--office);color:#fff}
+  .tmpl .note{margin:10px 0 0}
 
   /* ---- Calendario ---- */
   .cal-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8rem;color:var(--muted);margin:2px 0 16px}
@@ -88,21 +101,22 @@
   .day.tele{background:var(--tele)}
   .day.pres{background:var(--office)}
   .day.abs{background:var(--absence)}
+  .day.twob{background:var(--twob)}
+  .day.twob::after,.day.ho::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.9)}
   .day[data-work]:hover{outline:2px solid var(--brand);outline-offset:1px}
   .day.we{color:var(--muted);opacity:.5}
+  .day.off{color:var(--muted);opacity:.3;text-decoration:line-through;background:repeating-linear-gradient(45deg,transparent,transparent 3px,color-mix(in srgb,var(--muted) 22%,transparent) 3px,color-mix(in srgb,var(--muted) 22%,transparent) 4px)}
   .day.ho{background:var(--holiday);color:#fff;font-weight:700;cursor:help}
-  .day.ho::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.85)}
 
   /* ---- Totales ---- */
-  .totrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:4px 0 22px}
-  @media(max-width:680px){.totrow{grid-template-columns:1fr 1fr}}
-  @media(max-width:430px){.totrow{grid-template-columns:1fr}}
+  .totrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:4px 0 22px}
   .stat{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
   .stat .k{font-size:.74rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
   .stat .v{font-size:1.8rem;font-weight:700;line-height:1.1;margin-top:4px;letter-spacing:-.02em}
   .stat .s{font-size:.78rem;color:var(--muted);margin-top:2px}
   .stat.tele{background:var(--tele-soft);border-color:transparent}.stat.tele .v{color:var(--tele)}
   .stat.office{background:var(--office-soft);border-color:transparent}.stat.office .v{color:var(--office)}
+  .stat.twob{background:var(--twob-soft);border-color:transparent}.stat.twob .v{color:var(--twob)}
   .stat.state .v.ok{color:var(--ok)} .stat.state .v.bad{color:var(--warn)}
 
   /* ---- Histograma ---- */
@@ -128,15 +142,16 @@
   /* ---- Tabla ---- */
   details.detail{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
   details.detail summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--brand-ink)}
-  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.85rem}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.84rem}
   th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
   th:first-child,td:first-child{text-align:left}
-  thead th{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+  thead th{color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.03em;font-weight:700}
   tbody tr.summer td:first-child{color:var(--office);font-weight:700}
   tbody td .ok{color:var(--ok);font-weight:700} tbody td .bad{color:var(--warn);font-weight:700}
   tfoot td{font-weight:700;border-top:2px solid var(--line)}
   .note{font-size:.82rem;color:var(--muted)}
   footer{color:var(--muted);font-size:.8rem;text-align:center;margin-top:8px}
+  a{color:var(--brand-ink)}
 </style>
 </head>
 <body>
@@ -144,23 +159,27 @@
   <header class="page">
     <div class="topbar">
       <span class="badge">ANECA · Teletrabajo</span>
-      <a class="cfg-link" href="configuracion.html">⚙ Configurar festivos</a>
+      <a class="cfg-link" href="configuracion.html">⚙ Configuración</a>
     </div>
     <h1>Planificador de teletrabajo y días presenciales</h1>
-    <p>Marca en el calendario tus <b>días presenciales</b> (en los que no teletrabajas) y tus <b>ausencias</b>
-    (vacaciones, bajas, permisos). El resto de días laborables se muestran como <b>teletrabajo</b>. La herramienta
-    comprueba que cumples la regla: <b>al menos el 40&nbsp;% de las jornadas efectivas</b> deben ser presenciales.
-    <b>Junio–septiembre</b> se computan como un único bloque de 4 meses.</p>
+    <p>Usa la <b>plantilla semanal</b> para prerrellenar el año, y ajusta en el calendario tus <b>días presenciales</b>
+    y <b>ausencias</b>. El resto de días laborables son <b>teletrabajo</b>. Las semanas de <b>Navidad y Semana Santa</b>
+    son teletrabajo obligatorio y <b>no computan</b>. La herramienta comprueba el mínimo del <b>40&nbsp;% de jornadas
+    efectivas</b> presenciales; <b>junio–septiembre</b> se computan como un bloque de 4 meses.</p>
   </header>
 
   <!-- 1. Calendario -->
   <section class="card">
     <div class="controls">
-      <div class="paint">
+      <div class="field">
         <label for="year">Año</label>
         <select id="year"></select>
       </div>
-      <div class="paint">
+      <div class="field">
+        <label for="startDate">Fecha de inicio (opcional)</label>
+        <input type="date" id="startDate" style="padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:.95rem">
+      </div>
+      <div class="field">
         <label>Pincel — al pulsar/arrastrar marcas…</label>
         <div class="seg" id="tools" role="group" aria-label="Herramienta de marcado">
           <button data-tool="pres" aria-pressed="true"><i class="dot" style="background:var(--office)"></i>Presencial</button>
@@ -172,6 +191,24 @@
       <span class="selinfo" id="selInfo"></span>
       <button class="btn btn-ghost" id="clearSel">Reiniciar año</button>
     </div>
+
+    <div class="tmpl">
+      <div class="row">
+        <b>Plantilla semanal:</b>
+        <span class="note">presencial los</span>
+        <div class="wd-chips" id="wdChips" role="group" aria-label="Días presenciales de la plantilla">
+          <button data-wd="1" aria-pressed="true">L</button>
+          <button data-wd="2" aria-pressed="true">M</button>
+          <button data-wd="3" aria-pressed="false">X</button>
+          <button data-wd="4" aria-pressed="false">J</button>
+          <button data-wd="5" aria-pressed="false">V</button>
+        </div>
+        <button class="btn btn-solid" id="applyTmpl">Rellenar el año</button>
+      </div>
+      <p class="note">Marca los días presenciales de una semana tipo y rellena todo el año. Se conservan tus
+        ausencias y las semanas de teletrabajo obligatorio.</p>
+    </div>
+
     <h2 style="margin-top:4px"><span class="n">1</span>Planifica tu año</h2>
     <p class="sub">Haz clic en un día o <b>arrastra</b> (ratón o dedo) para marcar un rango, incluso cruzando de un
       mes a otro. Cambia de pincel para marcar presenciales, ausencias o volver a teletrabajo.</p>
@@ -179,8 +216,10 @@
       <span><i class="sw" style="background:var(--tele)"></i>Teletrabajo</span>
       <span><i class="sw" style="background:var(--office)"></i>Presencial</span>
       <span><i class="sw" style="background:var(--absence)"></i>Ausencia</span>
+      <span><i class="sw" style="background:var(--twob)"></i>Teletrabajo obligatorio (no computa)</span>
       <span><i class="sw" style="background:var(--holiday)"></i>Festivo Madrid</span>
       <span><i class="sw" style="background:var(--bg);border-color:var(--line)"></i>Fin de semana</span>
+      <span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--bg),var(--bg) 3px,var(--line) 3px,var(--line) 4px);border-color:var(--line)"></i>Antes del alta</span>
     </div>
     <div class="months" id="months"></div>
   </section>
@@ -188,7 +227,8 @@
   <!-- 2. Resumen -->
   <section class="card">
     <h2><span class="n">2</span>Resumen del año</h2>
-    <p class="sub">Días de teletrabajo frente a días presenciales por periodo de cómputo, y si cumples el mínimo del 40&nbsp;%.</p>
+    <p class="sub">Días de teletrabajo frente a presenciales por periodo de cómputo, y si cumples el mínimo del 40&nbsp;%.
+      El teletrabajo obligatorio (Navidad y Semana Santa) queda fuera del cálculo.</p>
     <div class="totrow" id="totals"></div>
     <div class="chart-legend">
       <span><i class="dot" style="background:var(--tele)"></i>Teletrabajo (plan)</span>
@@ -200,16 +240,16 @@
     <details class="detail">
       <summary>Ver tabla detallada por periodo</summary>
       <div style="overflow-x:auto"><table id="periodTable">
-        <thead><tr><th>Periodo</th><th>Laborables</th><th>Ausencias</th><th>Efectivas</th><th>Presencial</th><th>Mín. exigido</th><th>Teletrabajo</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Periodo</th><th>Laborables</th><th>Ausencias</th><th>T. oblig.</th><th>Efectivas</th><th>Presencial</th><th>Mín. exigido</th><th>Teletrabajo</th><th>Estado</th></tr></thead>
         <tbody></tbody><tfoot></tfoot>
       </table></div>
-      <p class="note" style="margin-top:10px">Mínimo presencial = ⌊0,40 × jornadas efectivas⌋. Cumples si tus días presenciales ≥ ese mínimo.</p>
+      <p class="note" style="margin-top:10px">Efectivas = laborables − ausencias − teletrabajo obligatorio. Mínimo presencial = ⌊0,40 × efectivas⌋. Cumples si tus presenciales ≥ ese mínimo.</p>
     </details>
   </section>
 
   <footer>
     Herramienta orientativa. Ante cualquier duda, prevalece la normativa e instrucciones oficiales de ANECA.
-    · <a href="configuracion.html">Configurar festivos</a>
+    · <a href="configuracion.html">Configuración</a>
   </footer>
 </div>
 
@@ -217,7 +257,7 @@
 (function(){
   "use strict";
   var PRESENCIAL_RATE=0.40;
-  var STORE_HOL="aneca-holidays-v1", STORE_PRES="aneca-presencial-v1", STORE_ABS="aneca-absences-v1";
+  var STORE_HOL="aneca-holidays-v1", STORE_PRES="aneca-presencial-v1", STORE_ABS="aneca-absences-v1", STORE_OBLIG="aneca-obligatorio-v1", STORE_START="aneca-inicio-v1";
   var MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   var DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], DOW_H=["L","M","X","J","V","S","D"];
   var PERIODS=[
@@ -240,14 +280,20 @@
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
   function load(key,fb){ try{var r=localStorage.getItem(key);if(r){var p=JSON.parse(r);if(p)return p;}}catch(e){} return fb(); }
   var holidays=load(STORE_HOL,function(){return clone(DEFAULT_HOLIDAYS);});
+  var obligStore=load(STORE_OBLIG,function(){return {};});
+  var startStore=load(STORE_START,function(){return {};});
   var presSet=new Set(load(STORE_PRES,function(){return [];}));
   var absSet=new Set(load(STORE_ABS,function(){return [];}));
   function savePres(){ try{localStorage.setItem(STORE_PRES,JSON.stringify(Array.from(presSet)));}catch(e){} }
   function saveAbs(){ try{localStorage.setItem(STORE_ABS,JSON.stringify(Array.from(absSet)));}catch(e){} }
+  function saveStart(){ try{localStorage.setItem(STORE_START,JSON.stringify(startStore));}catch(e){} }
+  function startDate(){ return startStore[state.year]||""; }
+  function beforeStart(ds){ var s=startDate(); return !!s && ds<s; }
 
   function pad(n){return (n<10?"0":"")+n;}
   function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
   function parseYMD(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+  function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;}
   function isWeekend(d){var g=d.getDay();return g===0||g===6;}
   function holMap(y){var m={};(holidays[y]||[]).forEach(function(h){m[h[0]]=h[1];});return m;}
   function isWorkdayStr(s,hm){var d=parseYMD(s);return !isWeekend(d)&&!hm[s];}
@@ -257,8 +303,34 @@
     ys.sort(function(a,b){return a-b;}); return ys;
   }
 
+  // ---- Semanas de teletrabajo obligatorio (Navidad + Semana Santa) ----
+  function easter(y){
+    var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),
+        g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,
+        m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+    return new Date(y,mo-1,da);
+  }
+  function defaultObligRanges(y){
+    var es=easter(y);
+    return [
+      [ymd(addDays(es,-6)), ymd(addDays(es,-2)), "Semana Santa"],   // Lunes a Viernes Santo
+      [y+"-12-24", y+"-12-31", "Navidad"],
+      [y+"-01-02", y+"-01-05", "Navidad (Reyes)"]
+    ];
+  }
+  function obligRanges(y){ return (obligStore[y] && obligStore[y].length) ? obligStore[y] : defaultObligRanges(y); }
+  function obligSet(y){
+    var hm=holMap(y), set={};
+    obligRanges(y).forEach(function(r){
+      var cur=parseYMD(r[0]), end=parseYMD(r[1]);
+      while(cur<=end){ var s=ymd(cur); if(isWorkdayStr(s,hm)) set[s]=1; cur.setDate(cur.getDate()+1); }
+    });
+    return set;
+  }
+
   var state={year:2026, tool:"pres"};
   var elMonths=document.getElementById("months"), elYear=document.getElementById("year"), elSelInfo=document.getElementById("selInfo");
+  var curOblig={};
 
   function buildYearSelect(){
     var ys=availableYears();
@@ -267,11 +339,17 @@
     elYear.value=state.year;
   }
 
-  // clase de estado de un día laborable
-  function dayState(ds){ if(presSet.has(ds))return "pres"; if(absSet.has(ds))return "abs"; return "tele"; }
+  // estado de un día laborable (prioridad: ausencia > obligatorio > presencial > teletrabajo)
+  function dayState(ds){
+    if(absSet.has(ds))return "abs";
+    if(curOblig[ds])return "twob";
+    if(presSet.has(ds))return "pres";
+    return "tele";
+  }
 
   function renderCalendar(){
     var y=state.year, hm=holMap(y), summer={5:1,6:1,7:1,8:1}, html="";
+    curOblig=obligSet(y);
     for(var m=0;m<12;m++){
       html+='<div class="mon'+(summer[m]?' summer':'')+'">';
       html+='<div class="mh"><b>'+MONTHS[m]+'</b>'+(summer[m]?'<span class="tag">verano</span>':'')+'</div>';
@@ -281,16 +359,21 @@
       var dim=new Date(y,m+1,0).getDate();
       for(var dd=1;dd<=dim;dd++){
         var ds=y+"-"+pad(m+1)+"-"+pad(dd), d=new Date(y,m,dd);
-        if(hm[ds]) html+='<div class="day ho" data-date="'+ds+'" title="'+esc(hm[ds])+'">'+dd+'</div>';
+        if(beforeStart(ds)) html+='<div class="day off" data-date="'+ds+'" title="Antes de tu fecha de inicio">'+dd+'</div>';
+        else if(hm[ds]) html+='<div class="day ho" data-date="'+ds+'" title="'+esc(hm[ds])+'">'+dd+'</div>';
         else if(isWeekend(d)) html+='<div class="day we" data-date="'+ds+'">'+dd+'</div>';
-        else html+='<div class="day '+dayState(ds)+'" data-date="'+ds+'" data-work="1">'+dd+'</div>';
+        else{
+          var st=dayState(ds);
+          var t=st==="twob"?' title="Teletrabajo obligatorio (no computa)"':'';
+          html+='<div class="day '+st+'" data-date="'+ds+'" data-work="1"'+t+'>'+dd+'</div>';
+        }
       }
       html+='</div></div>';
     }
     elMonths.innerHTML=html;
   }
 
-  // ---- Pincel de marcado (arrastre ratón/táctil) ----
+  // ---- Pincel ----
   document.getElementById("tools").addEventListener("click",function(e){
     var b=e.target.closest("button[data-tool]"); if(!b)return;
     state.tool=b.dataset.tool;
@@ -310,7 +393,7 @@
     var cell=el&&el.closest?el.closest("[data-date]"):null;
     if(cell)previewTo(cell.dataset.date);
   });
-  function endDrag(){ if(!drag)return; var d=drag; drag=null; commit(d.lastTo,d); }
+  function endDrag(){ if(!drag)return; var d=drag; drag=null; commit(d); }
   elMonths.addEventListener("pointerup",endDrag);
   elMonths.addEventListener("pointercancel",endDrag);
   window.addEventListener("pointerup",endDrag);
@@ -319,13 +402,13 @@
     var lo=a<b?a:b, hi=a<b?b:a, cur=parseYMD(lo), end=parseYMD(hi);
     while(cur<=end){ cb(ymd(cur)); cur.setDate(cur.getDate()+1); }
   }
-  function preview(d){ // devuelve {pres:Set,abs:Set} temporales
+  function preview(d){ // {pres,abs} temporales aplicando el rango
     var hm=holMap(state.year), p=new Set(presSet), a=new Set(absSet);
     eachInRange(d.anchor,d.lastTo,function(s){
-      if(!isWorkdayStr(s,hm))return;
-      if(d.mode==="pres"){p.add(s);a.delete(s);}
-      else if(d.mode==="abs"){a.add(s);p.delete(s);}
-      else{p.delete(s);a.delete(s);}
+      if(!isWorkdayStr(s,hm)||beforeStart(s))return;
+      if(d.mode==="pres"){ if(curOblig[s])return; p.add(s); a.delete(s); }   // no se puede ser presencial en semana obligatoria
+      else if(d.mode==="abs"){ a.add(s); p.delete(s); }                       // se puede estar de ausencia
+      else{ p.delete(s); a.delete(s); }
     });
     return {pres:p,abs:a};
   }
@@ -333,39 +416,75 @@
     drag.lastTo=toStr;
     var t=preview(drag);
     elMonths.querySelectorAll(".day[data-work]").forEach(function(c){
-      var ds=c.dataset.date, st=t.pres.has(ds)?"pres":(t.abs.has(ds)?"abs":"tele");
-      c.classList.remove("pres","abs","tele"); c.classList.add(st);
+      var ds=c.dataset.date, st = t.abs.has(ds)?"abs":(curOblig[ds]?"twob":(t.pres.has(ds)?"pres":"tele"));
+      c.classList.remove("pres","abs","tele","twob"); c.classList.add(st);
     });
     renderOutputs(t.pres,t.abs);
   }
-  function commit(toStr,d){
+  function commit(d){
     var t=preview(d); presSet=t.pres; absSet=t.abs;
     savePres(); saveAbs(); renderCalendar(); renderOutputs();
   }
 
   document.getElementById("clearSel").addEventListener("click",function(){
+    if(!confirm("¿Reiniciar el año "+state.year+"? Se borran tus días presenciales y ausencias de ese año."))return;
     var pre=state.year+"-";
     [presSet,absSet].forEach(function(S){ S.forEach(function(s){ if(s.indexOf(pre)===0)S.delete(s); }); });
     savePres(); saveAbs(); renderCalendar(); renderOutputs();
   });
 
+  // ---- Plantilla semanal ----
+  document.getElementById("wdChips").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-wd]"); if(!b)return;
+    b.setAttribute("aria-pressed", b.getAttribute("aria-pressed")!=="true");
+  });
+  document.getElementById("applyTmpl").addEventListener("click",function(){
+    var wds={};
+    document.querySelectorAll('#wdChips button[aria-pressed=true]').forEach(function(b){ wds[+b.dataset.wd]=1; });
+    var names=Object.keys(wds).map(function(k){return DOW_H[[1,2,3,4,5].indexOf(+k)];});
+    if(!Object.keys(wds).length){ if(!confirm("No has elegido ningún día presencial: todo el año pasará a teletrabajo (salvo ausencias). ¿Continuar?"))return; }
+    else if(!confirm("Se marcará como presencial "+namesText(wds)+" en "+state.year+", y el resto teletrabajo. Se conservan ausencias y semanas obligatorias. ¿Continuar?"))return;
+    var y=state.year, hm=holMap(y), ob=obligSet(y), pre=y+"-";
+    presSet.forEach(function(s){ if(s.indexOf(pre)===0)presSet.delete(s); });
+    for(var m=0;m<12;m++){
+      var dim=new Date(y,m+1,0).getDate();
+      for(var dd=1;dd<=dim;dd++){
+        var ds=y+"-"+pad(m+1)+"-"+pad(dd);
+        if(!isWorkdayStr(ds,hm)||beforeStart(ds))continue;
+        if(absSet.has(ds)||ob[ds])continue;                 // no tocar ausencias ni obligatorios
+        var wd=parseYMD(ds).getDay();
+        if(wds[wd]) presSet.add(ds);
+      }
+    }
+    savePres(); renderCalendar(); renderOutputs();
+  });
+  function namesText(wds){
+    var full={1:"lunes",2:"martes",3:"miércoles",4:"jueves",5:"viernes"};
+    var arr=[1,2,3,4,5].filter(function(k){return wds[k];}).map(function(k){return full[k];});
+    return arr.length>1 ? arr.slice(0,-1).join(", ")+" y "+arr[arr.length-1] : arr[0];
+  }
+
   // ==== Cálculo ====
   function computePeriods(pS,aS){
     pS=pS||presSet; aS=aS||absSet;
-    var y=state.year, hm=holMap(y);
+    var y=state.year, hm=holMap(y), ob=curOblig;
     return PERIODS.map(function(P){
-      var work=0,abs=0,pres=0;
+      var work=0,abs=0,pres=0,twob=0;
       P.months.forEach(function(m){
         var dim=new Date(y,m+1,0).getDate();
         for(var dd=1;dd<=dim;dd++){
           var ds=y+"-"+pad(m+1)+"-"+pad(dd);
-          if(isWorkdayStr(ds,hm)){ work++; if(aS.has(ds))abs++; else if(pS.has(ds))pres++; }
+          if(!isWorkdayStr(ds,hm)||beforeStart(ds))continue;
+          work++;
+          if(aS.has(ds))abs++;
+          else if(ob[ds])twob++;
+          else if(pS.has(ds))pres++;
         }
       });
-      var eff=Math.max(0,work-abs);
+      var eff=Math.max(0,work-abs-twob);
       var minOff=Math.floor(PRESENCIAL_RATE*eff);
       var tele=eff-pres;
-      return {label:P.label,sub:P.sub,summer:!!P.summer,work:work,abs:abs,eff:eff,pres:pres,minOff:minOff,tele:tele,ok:pres>=minOff};
+      return {label:P.label,sub:P.sub,summer:!!P.summer,work:work,abs:abs,twob:twob,eff:eff,pres:pres,minOff:minOff,tele:tele,ok:pres>=minOff,applicable:work>0};
     });
   }
 
@@ -374,38 +493,39 @@
 
   function renderOutputs(pS,aS){
     var P=computePeriods(pS,aS);
-    var totEff=0,totPres=0,totTele=0,totWork=0,totAbs=0,totMin=0,okCount=0,maxEff=1;
-    P.forEach(function(p){totEff+=p.eff;totPres+=p.pres;totTele+=p.tele;totWork+=p.work;totAbs+=p.abs;totMin+=p.minOff;if(p.ok)okCount++;if(p.eff>maxEff)maxEff=p.eff;});
-    var allOk=okCount===P.length;
-
+    var totEff=0,totPres=0,totTele=0,totWork=0,totAbs=0,totTwob=0,totMin=0,okCount=0,appCount=0,maxEff=1;
+    P.forEach(function(p){totEff+=p.eff;totPres+=p.pres;totTele+=p.tele;totWork+=p.work;totAbs+=p.abs;totTwob+=p.twob;totMin+=p.minOff;if(p.applicable){appCount++;if(p.ok)okCount++;}if(p.eff>maxEff)maxEff=p.eff;});
+    var allOk=okCount===appCount;
     var telePct=totEff?Math.round(totTele/totEff*100):0;
+
     elTotals.innerHTML=
       '<div class="stat tele"><div class="k">Teletrabajo (plan)</div><div class="v">'+totTele+'</div><div class="s">'+telePct+'% de '+totEff+' efectivas</div></div>'+
       '<div class="stat office"><div class="k">Presencial (plan)</div><div class="v">'+totPres+'</div><div class="s">mínimo exigido: '+totMin+'</div></div>'+
+      '<div class="stat twob"><div class="k">T. obligatorio</div><div class="v">'+totTwob+'</div><div class="s">Navidad y S. Santa · no computa</div></div>'+
       '<div class="stat"><div class="k">Ausencias</div><div class="v">'+totAbs+'</div><div class="s">sobre '+totWork+' laborables</div></div>'+
-      '<div class="stat state"><div class="k">Cumplimiento</div><div class="v '+(allOk?"ok":"bad")+'">'+okCount+'/'+P.length+'</div><div class="s">'+(allOk?"cumples todos los periodos":"revisa periodos en rojo")+'</div></div>';
+      '<div class="stat state"><div class="k">Cumplimiento</div><div class="v '+(allOk?"ok":"bad")+'">'+okCount+'/'+appCount+'</div><div class="s">'+(allOk?"cumples todos los periodos":"revisa periodos en rojo")+'</div></div>';
 
     var bars="",caps="";
     P.forEach(function(p){
       var h=Math.round(p.eff/maxEff*100);
       var presH=p.eff?Math.round(p.pres/p.eff*100):0, teleH=100-presH;
       var minH=p.eff?Math.round(p.minOff/p.eff*100):0;
-      var title=p.label+(p.sub?" ("+p.sub+")":"")+": "+p.tele+" teletrabajo · "+p.pres+" presencial (mín. "+p.minOff+") · "+p.eff+" efectivas";
+      var title=p.label+(p.sub?" ("+p.sub+")":"")+": "+p.tele+" teletrabajo · "+p.pres+" presencial (mín. "+p.minOff+") · "+p.eff+" efectivas"+(p.twob?" · "+p.twob+" T.oblig.":"");
       bars+='<div class="col'+(p.summer?' summer':'')+'"><div class="barwrap" style="height:'+Math.max(h,3)+'%" title="'+esc(title)+'">'+
         '<div class="bar" style="height:100%">'+
           '<div class="seg tele'+(teleH<14?' small':'')+'" style="height:'+teleH+'%">'+(p.tele||"")+'</div>'+
           '<div class="seg office'+(presH<14?' small':'')+'" style="height:'+presH+'%">'+(p.pres||"")+'</div>'+
         '</div>'+(p.eff?'<div class="minmark" style="bottom:'+minH+'%"></div>':'')+'</div></div>';
-      caps+='<div class="cap'+(p.summer?' summer':'')+'"><b>'+p.label+'</b><span class="badge2 '+(p.ok?"ok":"bad")+'">'+(p.ok?"✓":"✗")+'</span></div>';
+      caps+='<div class="cap'+(p.summer?' summer':'')+'"><b>'+p.label+'</b><span class="badge2 '+(p.ok?"ok":"bad")+'">'+(!p.applicable?"·":(p.ok?"✓":"✗"))+'</span></div>';
     });
     elChart.innerHTML=bars; elCaps.innerHTML=caps;
 
     tbody.innerHTML=P.map(function(p){
-      var estado=p.ok?'<span class="ok">✓ cumple</span>':'<span class="bad">✗ faltan '+(p.minOff-p.pres)+'</span>';
+      var estado=!p.applicable?'<span class="note">—</span>':(p.ok?'<span class="ok">✓ cumple</span>':'<span class="bad">✗ faltan '+(p.minOff-p.pres)+'</span>');
       return '<tr'+(p.summer?' class="summer"':'')+'><td>'+p.label+(p.sub?' <span class="note">('+p.sub+')</span>':'')+
-        '</td><td>'+p.work+'</td><td>'+p.abs+'</td><td>'+p.eff+'</td><td>'+p.pres+'</td><td>'+p.minOff+'</td><td>'+p.tele+'</td><td style="text-align:right">'+estado+'</td></tr>';
+        '</td><td>'+p.work+'</td><td>'+p.abs+'</td><td>'+p.twob+'</td><td>'+p.eff+'</td><td>'+p.pres+'</td><td>'+p.minOff+'</td><td>'+p.tele+'</td><td style="text-align:right">'+estado+'</td></tr>';
     }).join("");
-    tfoot.innerHTML='<tr><td>Total año</td><td>'+totWork+'</td><td>'+totAbs+'</td><td>'+totEff+'</td><td>'+totPres+'</td><td>'+totMin+'</td><td>'+totTele+'</td><td style="text-align:right">'+(allOk?'<span class="ok">✓</span>':'<span class="bad">'+okCount+'/'+P.length+'</span>')+'</td></tr>';
+    tfoot.innerHTML='<tr><td>Total año</td><td>'+totWork+'</td><td>'+totAbs+'</td><td>'+totTwob+'</td><td>'+totEff+'</td><td>'+totPres+'</td><td>'+totMin+'</td><td>'+totTele+'</td><td style="text-align:right">'+(allOk?'<span class="ok">✓</span>':'<span class="bad">'+okCount+'/'+appCount+'</span>')+'</td></tr>';
 
     var pre=state.year+"-",np=0,na=0;
     (pS||presSet).forEach(function(s){if(s.indexOf(pre)===0)np++;});
@@ -413,14 +533,27 @@
     elSelInfo.innerHTML='<b>'+np+'</b> presenciales · <b>'+na+'</b> ausencias en '+state.year;
   }
 
-  elYear.addEventListener("change",function(){state.year=+elYear.value;renderCalendar();renderOutputs();});
+  var elStart=document.getElementById("startDate");
+  function syncStartInput(){
+    var y=state.year;
+    elStart.min=y+"-01-01"; elStart.max=y+"-12-31"; elStart.value=startDate();
+  }
+  elStart.addEventListener("change",function(){
+    var v=elStart.value;
+    if(v && (+v.slice(0,4)!==state.year)){ // fuerza que sea del año seleccionado
+      alert("La fecha de inicio debe pertenecer a "+state.year+"."); elStart.value=startDate(); return;
+    }
+    if(v) startStore[state.year]=v; else delete startStore[state.year];
+    saveStart(); renderCalendar(); renderOutputs();
+  });
+  elYear.addEventListener("change",function(){state.year=+elYear.value;syncStartInput();renderCalendar();renderOutputs();});
 
   function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 
   (function init(){
     var ys=availableYears();
     state.year=ys.indexOf(2026)>=0?2026:ys[ys.length-1];
-    buildYearSelect(); renderCalendar(); renderOutputs();
+    buildYearSelect(); syncStartInput(); renderCalendar(); renderOutputs();
   })();
 })();
 </script>

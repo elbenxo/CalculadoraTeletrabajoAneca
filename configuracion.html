@@ -82,12 +82,29 @@
       <span class="saved" id="saved"></span>
     </p>
   </section>
+
+  <section class="card">
+    <h2>Semanas de teletrabajo obligatorio de <span id="yl2">2026</span></h2>
+    <p class="sub">Navidad y Semana Santa son teletrabajo obligatorio por ANECA: esos días laborables <b>no computan</b>
+      en el cálculo (no suben el mínimo presencial y no pueden marcarse como presenciales). Semana Santa se calcula
+      automáticamente; ajusta los rangos si en tu caso son distintos.</p>
+    <div class="hol-list" id="obList"></div>
+    <div class="add-hol" style="grid-template-columns:1fr 1fr 1fr auto">
+      <div><label for="obFrom">Desde</label><input type="date" id="obFrom"></div>
+      <div><label for="obTo">Hasta</label><input type="date" id="obTo"></div>
+      <div><label for="obName">Etiqueta</label><input type="text" id="obName" placeholder="p. ej. Navidad"></div>
+      <button class="btn btn-ghost" id="addOb">+ Añadir</button>
+    </div>
+    <div class="warnbox" id="obWarn" style="display:none"></div>
+    <p class="note" style="margin-top:16px"><a href="#" id="resetOb">Restaurar rangos automáticos del año</a>
+      <span class="saved" id="saved2"></span></p>
+  </section>
 </div>
 
 <script>
 (function(){
   "use strict";
-  var STORE_HOL="aneca-holidays-v1";
+  var STORE_HOL="aneca-holidays-v1", STORE_OBLIG="aneca-obligatorio-v1";
   var DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
   var DEFAULT_HOLIDAYS={
     2025:[["2025-01-01","Año Nuevo"],["2025-01-06","Reyes"],["2025-04-17","Jueves Santo"],["2025-04-18","Viernes Santo"],
@@ -100,12 +117,24 @@
       ["2026-12-08","Inmaculada"],["2026-12-25","Navidad"]]
   };
   function clone(o){return JSON.parse(JSON.stringify(o));}
-  function load(){ try{var r=localStorage.getItem(STORE_HOL);if(r){var p=JSON.parse(r);if(p)return p;}}catch(e){} return clone(DEFAULT_HOLIDAYS); }
+  function loadKey(key,fb){ try{var r=localStorage.getItem(key);if(r){var p=JSON.parse(r);if(p)return p;}}catch(e){} return fb; }
+  function load(){ return loadKey(STORE_HOL, clone(DEFAULT_HOLIDAYS)); }
   function save(){ try{localStorage.setItem(STORE_HOL,JSON.stringify(holidays));flash();}catch(e){} }
   var holidays=load();
+  var obligStore=loadKey(STORE_OBLIG,{});
+  function saveOblig(){ try{localStorage.setItem(STORE_OBLIG,JSON.stringify(obligStore));flash2();}catch(e){} }
 
   function pad(n){return (n<10?"0":"")+n;}
+  function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
   function parseYMD(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+  function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;}
+  function easter(y){var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),
+    g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,
+    m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da);}
+  function defaultOblig(y){var es=easter(y);return [
+    [ymd(addDays(es,-6)),ymd(addDays(es,-2)),"Semana Santa"],
+    [y+"-12-24",y+"-12-31","Navidad"],[y+"-01-02",y+"-01-05","Navidad (Reyes)"]];}
+  function obligRanges(y){ return (obligStore[y]&&obligStore[y].length)?obligStore[y]:defaultOblig(y); }
   function years(){
     var ys=Object.keys(holidays).map(Number).filter(function(n){return !isNaN(n);});
     [2025,2026,2027].forEach(function(y){if(ys.indexOf(y)<0)ys.push(y);});
@@ -114,6 +143,8 @@
   var state={year:2026};
   var elYear=document.getElementById("year"),elList=document.getElementById("holList"),
       elYL=document.getElementById("yl"),elWarn=document.getElementById("holWarn"),elSaved=document.getElementById("saved");
+  var elObList=document.getElementById("obList"),elYL2=document.getElementById("yl2"),elObWarn=document.getElementById("obWarn"),elSaved2=document.getElementById("saved2");
+  function flash2(){ elSaved2.textContent="✓ guardado"; clearTimeout(flash2._t); flash2._t=setTimeout(function(){elSaved2.textContent="";},1500); }
 
   function buildYears(){
     var ys=years();
@@ -144,7 +175,35 @@
     }else elWarn.style.display="none";
   }
 
-  elYear.addEventListener("change",function(){state.year=+elYear.value;render();});
+  function renderOblig(){
+    var y=state.year; elYL2.textContent=y;
+    var custom=!!(obligStore[y]&&obligStore[y].length);
+    var arr=obligRanges(y).slice().sort(function(a,b){return a[0]<b[0]?-1:1;});
+    elObList.innerHTML="";
+    arr.forEach(function(r,idx){
+      var f=parseYMD(r[0]),t=parseYMD(r[1]);
+      var el=document.createElement("div"); el.className="hol";
+      el.innerHTML='<i class="sw" style="background:#0ea5b7"></i><b>'+pad(f.getDate())+"/"+pad(f.getMonth()+1)+'–'+pad(t.getDate())+"/"+pad(t.getMonth()+1)+'</b> '+esc(r[2]||"")+' <button title="Eliminar">✕</button>';
+      el.querySelector("button").addEventListener("click",function(){
+        var cur=obligRanges(y).slice(); cur.splice(idx,1); obligStore[y]=cur; saveOblig(); renderOblig();
+      });
+      elObList.appendChild(el);
+    });
+    elObWarn.style.display = custom ? "none" : "";
+    if(!custom) elObWarn.innerHTML="Mostrando los rangos <b>automáticos</b> de "+y+". Si añades o eliminas alguno, se guardarán como personalizados para este año.";
+  }
+  document.getElementById("addOb").addEventListener("click",function(){
+    var f=document.getElementById("obFrom").value,t=document.getElementById("obTo").value,n=document.getElementById("obName").value.trim()||"Teletrabajo obligatorio";
+    if(!f||!t)return; if(t<f){var tmp=f;f=t;t=tmp;}
+    var y=state.year, cur=obligRanges(y).slice(); cur.push([f,t,n]); obligStore[y]=cur; saveOblig();
+    document.getElementById("obFrom").value="";document.getElementById("obTo").value="";document.getElementById("obName").value="";
+    renderOblig();
+  });
+  document.getElementById("resetOb").addEventListener("click",function(e){
+    e.preventDefault(); delete obligStore[state.year]; saveOblig(); renderOblig();
+  });
+
+  elYear.addEventListener("change",function(){state.year=+elYear.value;render();renderOblig();});
   document.getElementById("addHol").addEventListener("click",function(){
     var date=document.getElementById("holDate").value, name=document.getElementById("holName").value.trim()||"Festivo";
     if(!date)return;
@@ -160,7 +219,7 @@
     }
   });
 
-  buildYears(); render();
+  buildYears(); render(); renderOblig();
 })();
 </script>
 </body>
