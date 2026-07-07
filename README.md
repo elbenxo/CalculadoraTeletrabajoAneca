@@ -27,6 +27,10 @@ Además:
 El **resumen anual** muestra un histograma de teletrabajo frente a presencial por periodo, con la línea
 del mínimo exigido, y marca ✓/✗ si cumples en cada periodo (los periodos anteriores al alta aparecen como «—»).
 
+**Informe PDF**: el botón *Descargar informe (PDF)* abre una vista previa del informe (resumen, tabla por
+periodo, rangos de vacaciones/ausencias y detalle mensual día a día) y usa *Guardar como PDF* del navegador,
+sin librerías externas. Funciona en escritorio y móvil.
+
 ## Regla que aplica
 
 - Deben ser presenciales **al menos el 40 % de las jornadas efectivas** de cada periodo.

@@ -152,6 +152,53 @@
   .note{font-size:.82rem;color:var(--muted)}
   footer{color:var(--muted);font-size:.8rem;text-align:center;margin-top:8px}
   a{color:var(--brand-ink)}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+
+  /* ---- Modal informe ---- */
+  #reportModal{position:fixed;inset:0;background:rgba(10,16,26,.6);display:none;z-index:60;padding:24px;overflow:auto}
+  #reportModal.open{display:block}
+  .modal-card{max-width:840px;margin:0 auto}
+  .modal-tools{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:16px;box-shadow:var(--shadow)}
+  .modal-tools .grow{flex:1;min-width:160px}
+  .modal-tools input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit;font-size:.9rem}
+  .modal-tools .acts{display:flex;gap:8px}
+
+  /* Documento del informe: paleta fija tipo papel (independiente del tema) */
+  #report{background:#fff;color:#1a2432;border-radius:10px;padding:30px 32px;box-shadow:var(--shadow);font-size:12.5px;line-height:1.5}
+  #report h1{font-size:1.35rem;margin:0 0 2px;color:#111}
+  #report .meta{color:#5c6b7f;font-size:.8rem;margin:0 0 18px}
+  #report h2{font-size:.95rem;margin:22px 0 8px;color:#111;border-bottom:1px solid #e3e8f0;padding-bottom:5px}
+  #report .rsum{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:6px 0 4px}
+  @media(max-width:560px){#report .rsum{grid-template-columns:1fr 1fr}}
+  #report .rs{border:1px solid #e3e8f0;border-radius:9px;padding:10px}
+  #report .rs .k{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:#5c6b7f;font-weight:700}
+  #report .rs .v{font-size:1.3rem;font-weight:700;margin-top:2px}
+  #report .rs .s{font-size:.7rem;color:#5c6b7f}
+  #report table{width:100%;border-collapse:collapse;margin-top:8px;font-size:11.5px}
+  #report th,#report td{border:1px solid #e3e8f0;padding:5px 7px;text-align:right;white-space:nowrap}
+  #report th:first-child,#report td:first-child{text-align:left;white-space:normal}
+  #report thead th{background:#f4f6fb;color:#5c6b7f;font-size:.66rem;text-transform:uppercase;letter-spacing:.02em}
+  #report tfoot td{font-weight:700;background:#f8fafc}
+  #report tr{page-break-inside:avoid}
+  #report .rlegend{display:flex;flex-wrap:wrap;gap:14px;font-size:.72rem;color:#5c6b7f;margin:2px 0 2px}
+  #report .rlegend span{display:inline-flex;align-items:center;gap:6px}
+  #report .rdot{width:9px;height:9px;border-radius:3px;display:inline-block}
+  #report .rok{color:#1f7a4d;font-weight:700}#report .rbad{color:#b3261e;font-weight:700}
+  #report ul.ranges{margin:6px 0 0;padding-left:18px}#report ul.ranges li{margin:2px 0}
+  #report .daylist{color:#1a2432}
+  #report .foot{margin-top:22px;padding-top:10px;border-top:1px solid #e3e8f0;color:#5c6b7f;font-size:.72rem}
+
+  @media print{
+    body{background:#fff;padding:0}
+    body>.wrap{display:none!important}
+    #reportModal{position:static;inset:auto;display:block!important;background:#fff;padding:0;overflow:visible}
+    #reportModal .modal-tools{display:none!important}
+    .modal-card{max-width:none;margin:0}
+    #report{box-shadow:none;border-radius:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #report h2{page-break-after:avoid}
+    @page{margin:14mm}
+  }
 </style>
 </head>
 <body>
@@ -226,7 +273,10 @@
 
   <!-- 2. Resumen -->
   <section class="card">
-    <h2><span class="n">2</span>Resumen del año</h2>
+    <div class="card-head">
+      <h2><span class="n">2</span>Resumen del año</h2>
+      <button class="btn btn-solid" id="openReport">📄 Descargar informe (PDF)</button>
+    </div>
     <p class="sub">Días de teletrabajo frente a presenciales por periodo de cómputo, y si cumples el mínimo del 40&nbsp;%.
       El teletrabajo obligatorio (Navidad y Semana Santa) queda fuera del cálculo.</p>
     <div class="totrow" id="totals"></div>
@@ -253,12 +303,29 @@
   </footer>
 </div>
 
+<!-- Modal del informe -->
+<div id="reportModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-tools no-print">
+      <div class="grow">
+        <input type="text" id="repName" placeholder="Nombre para el informe (opcional)">
+      </div>
+      <div class="acts">
+        <button class="btn btn-solid" id="printReport">Guardar como PDF / Imprimir</button>
+        <button class="btn btn-ghost" id="closeReport">Cerrar</button>
+      </div>
+    </div>
+    <div id="report"></div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
   var PRESENCIAL_RATE=0.40;
-  var STORE_HOL="aneca-holidays-v1", STORE_PRES="aneca-presencial-v1", STORE_ABS="aneca-absences-v1", STORE_OBLIG="aneca-obligatorio-v1", STORE_START="aneca-inicio-v1";
+  var STORE_HOL="aneca-holidays-v1", STORE_PRES="aneca-presencial-v1", STORE_ABS="aneca-absences-v1", STORE_OBLIG="aneca-obligatorio-v1", STORE_START="aneca-inicio-v1", STORE_NAME="aneca-nombre-v1";
   var MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  var MSHORT=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
   var DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], DOW_H=["L","M","X","J","V","S","D"];
   var PERIODS=[
     {label:"Ene",months:[0]},{label:"Feb",months:[1]},{label:"Mar",months:[2]},
@@ -549,6 +616,113 @@
   elYear.addEventListener("change",function(){state.year=+elYear.value;syncStartInput();renderCalendar();renderOutputs();});
 
   function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+  // ==== Informe PDF ====
+  function fmtD(ds){var d=parseYMD(ds);return d.getDate()+" "+MSHORT[d.getMonth()];}
+  function monthlyDetail(y){
+    var hm=holMap(y), ob=curOblig, res=[];
+    for(var m=0;m<12;m++){
+      var o={pres:[],tele:[],abs:[],twob:[]}, dim=new Date(y,m+1,0).getDate();
+      for(var dd=1;dd<=dim;dd++){
+        var ds=y+"-"+pad(m+1)+"-"+pad(dd);
+        if(!isWorkdayStr(ds,hm)||beforeStart(ds))continue;
+        if(absSet.has(ds))o.abs.push(dd);
+        else if(ob[ds])o.twob.push(dd);
+        else if(presSet.has(ds))o.pres.push(dd);
+        else o.tele.push(dd);
+      }
+      res.push(o);
+    }
+    return res;
+  }
+  function absenceRanges(y){
+    var hm=holMap(y);
+    var dates=Array.from(absSet).filter(function(s){return s.indexOf(y+"-")===0 && !beforeStart(s);}).sort();
+    var out=[], i=0;
+    while(i<dates.length){
+      var end=dates[i], j=i+1;
+      while(j<dates.length){
+        var gapOK=true, cur=addDays(parseYMD(end),1), nd=parseYMD(dates[j]);
+        while(cur<nd){ if(isWorkdayStr(ymd(cur),hm)){gapOK=false;break;} cur.setDate(cur.getDate()+1); }
+        if(gapOK){ end=dates[j]; j++; } else break;
+      }
+      var cnt=0,c=parseYMD(dates[i]),e=parseYMD(end);
+      while(c<=e){ if(absSet.has(ymd(c)))cnt++; c.setDate(c.getDate()+1); }
+      out.push({from:dates[i],to:end,count:cnt}); i=j;
+    }
+    return out;
+  }
+  function dl(arr){ return arr.length ? arr.join(", ") : "—"; }
+
+  function buildReport(){
+    var y=state.year, name=(document.getElementById("repName").value||"").trim();
+    var P=computePeriods();
+    var tE=0,tP=0,tT=0,tW=0,tA=0,tOb=0,tM=0,ok=0,app=0;
+    P.forEach(function(p){tE+=p.eff;tP+=p.pres;tT+=p.tele;tW+=p.work;tA+=p.abs;tOb+=p.twob;tM+=p.minOff;if(p.applicable){app++;if(p.ok)ok++;}});
+    var allOk=ok===app;
+    var det=monthlyDetail(y), ranges=absenceRanges(y);
+    var now=new Date();
+    var gen=pad(now.getDate())+"/"+pad(now.getMonth()+1)+"/"+now.getFullYear()+" "+pad(now.getHours())+":"+pad(now.getMinutes());
+    var telePct=tE?Math.round(tT/tE*100):0;
+    var sd=startDate();
+
+    var h='';
+    h+='<h1>Informe de planificación de teletrabajo</h1>';
+    h+='<p class="meta">ANECA'+(name?' · '+esc(name):'')+' · Año '+y+(sd?' · Alta: '+fmtD(sd):'')+' · Generado el '+gen+'</p>';
+
+    h+='<h2>Resumen anual</h2>';
+    h+='<div class="rsum">'+
+      '<div class="rs"><div class="k">Teletrabajo</div><div class="v" style="color:#2fa36b">'+tT+'</div><div class="s">'+telePct+'% de '+tE+' efectivas</div></div>'+
+      '<div class="rs"><div class="k">Presencial</div><div class="v" style="color:#e8813a">'+tP+'</div><div class="s">mínimo exigido '+tM+'</div></div>'+
+      '<div class="rs"><div class="k">T. obligatorio</div><div class="v" style="color:#0ea5b7">'+tOb+'</div><div class="s">no computa</div></div>'+
+      '<div class="rs"><div class="k">Ausencias</div><div class="v" style="color:#6d7c93">'+tA+'</div><div class="s">de '+tW+' laborables</div></div>'+
+      '<div class="rs"><div class="k">Cumplimiento</div><div class="v '+(allOk?'rok':'rbad')+'">'+ok+'/'+app+'</div><div class="s">'+(allOk?'cumple':'revisar')+'</div></div>'+
+    '</div>';
+
+    h+='<h2>Detalle por periodo de cómputo</h2>';
+    h+='<table><thead><tr><th>Periodo</th><th>Laborables</th><th>Ausencias</th><th>T. oblig.</th><th>Efectivas</th><th>Presencial</th><th>Mín.</th><th>Teletrabajo</th><th>Estado</th></tr></thead><tbody>';
+    P.forEach(function(p){
+      var est=!p.applicable?'—':(p.ok?'<span class="rok">cumple</span>':'<span class="rbad">faltan '+(p.minOff-p.pres)+'</span>');
+      h+='<tr><td>'+p.label+(p.sub?' ('+p.sub+')':'')+'</td><td>'+p.work+'</td><td>'+p.abs+'</td><td>'+p.twob+'</td><td>'+p.eff+'</td><td>'+p.pres+'</td><td>'+p.minOff+'</td><td>'+p.tele+'</td><td style="text-align:right">'+est+'</td></tr>';
+    });
+    h+='</tbody><tfoot><tr><td>Total</td><td>'+tW+'</td><td>'+tA+'</td><td>'+tOb+'</td><td>'+tE+'</td><td>'+tP+'</td><td>'+tM+'</td><td>'+tT+'</td><td style="text-align:right">'+ok+'/'+app+'</td></tr></tfoot></table>';
+
+    h+='<h2>Vacaciones y ausencias</h2>';
+    if(ranges.length){
+      h+='<ul class="ranges">';
+      ranges.forEach(function(r){ h+='<li>'+fmtD(r.from)+(r.from!==r.to?' – '+fmtD(r.to):'')+' · <b>'+r.count+'</b> día'+(r.count===1?'':'s')+' laborable'+(r.count===1?'':'s')+'</li>'; });
+      h+='</ul>';
+    }else h+='<p class="daylist">Sin ausencias registradas.</p>';
+
+    h+='<h2>Detalle mensual (día del mes)</h2>';
+    h+='<table><thead><tr><th>Mes</th><th>Presencial</th><th>Teletrabajo</th><th>Ausencias</th><th>T. oblig.</th></tr></thead><tbody>';
+    for(var m=0;m<12;m++){
+      var o=det[m], any=o.pres.length+o.tele.length+o.abs.length+o.twob.length;
+      if(!any) continue;
+      h+='<tr><td>'+MONTHS[m]+'</td><td class="daylist">'+dl(o.pres)+'</td><td class="daylist">'+dl(o.tele)+'</td><td class="daylist">'+dl(o.abs)+'</td><td class="daylist">'+dl(o.twob)+'</td></tr>';
+    }
+    h+='</tbody></table>';
+
+    h+='<div class="rlegend" style="margin-top:12px">'+
+      '<span><i class="rdot" style="background:#2fa36b"></i>Teletrabajo</span>'+
+      '<span><i class="rdot" style="background:#e8813a"></i>Presencial</span>'+
+      '<span><i class="rdot" style="background:#6d7c93"></i>Ausencia</span>'+
+      '<span><i class="rdot" style="background:#0ea5b7"></i>Teletrabajo obligatorio</span></div>';
+
+    h+='<div class="foot">Regla aplicada: mínimo presencial = ⌊0,40 × jornadas efectivas⌋ por periodo (jun–sep como bloque único). '+
+      'El teletrabajo obligatorio (Navidad y Semana Santa) y los festivos de Madrid capital no computan como jornada efectiva. '+
+      'Documento orientativo; prevalece la normativa e instrucciones oficiales de ANECA.</div>';
+
+    document.getElementById("report").innerHTML=h;
+  }
+
+  var elModal=document.getElementById("reportModal"), elRepName=document.getElementById("repName");
+  elRepName.value=load(STORE_NAME,function(){return "";})||"";
+  document.getElementById("openReport").addEventListener("click",function(){ buildReport(); elModal.classList.add("open"); elModal.setAttribute("aria-hidden","false"); });
+  document.getElementById("closeReport").addEventListener("click",function(){ elModal.classList.remove("open"); elModal.setAttribute("aria-hidden","true"); });
+  elModal.addEventListener("click",function(e){ if(e.target===elModal){ elModal.classList.remove("open"); elModal.setAttribute("aria-hidden","true"); } });
+  elRepName.addEventListener("input",function(){ try{localStorage.setItem(STORE_NAME,JSON.stringify(elRepName.value));}catch(e){} buildReport(); });
+  document.getElementById("printReport").addEventListener("click",function(){ window.print(); });
 
   (function init(){
     var ys=availableYears();
