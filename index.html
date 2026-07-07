@@ -7,8 +7,8 @@
 <meta name="description" content="Planifica en un calendario anual tus días presenciales, ausencias y teletrabajo en ANECA. Plantilla semanal, semanas de teletrabajo obligatorio (Navidad y Semana Santa) y comprobación del 40% con los festivos de Madrid capital.">
 <style>
   :root{
-    --bg:#f4f6fb; --card:#ffffff; --ink:#16202e; --muted:#5c6b7f;
-    --line:#e3e8f0; --brand:#2f6fed; --brand-ink:#1b4bb8;
+    --bg:#f4f7f8; --card:#ffffff; --ink:#1c2a2e; --muted:#5d6f74;
+    --line:#dfe7e9; --brand:#0f6e78; --brand-ink:#0a555e;   /* teal ANECA */
     --office:#e8813a; --office-soft:#fdeede;      /* presencial */
     --tele:#2fa36b; --tele-soft:#e6f5ed;          /* teletrabajo */
     --twob:#0ea5b7; --twob-soft:#e2f5f8;          /* teletrabajo obligatorio */
@@ -19,8 +19,8 @@
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --bg:#0e1420; --card:#161f2e; --ink:#eef2f8; --muted:#9aa8bd;
-      --line:#263245; --brand:#5b8dff; --brand-ink:#8fb0ff;
+      --bg:#0d1618; --card:#152023; --ink:#eaf2f3; --muted:#95a8ad;
+      --line:#243236; --brand:#3fb5c0; --brand-ink:#6fd0d9;   /* teal ANECA */
       --office:#f0955a; --office-soft:#3a2415;
       --tele:#4cc98c; --tele-soft:#12321f;
       --twob:#2dd4bf; --twob-soft:#0f2f2e;
@@ -36,11 +36,19 @@
     -webkit-font-smoothing:antialiased;padding:24px 16px 64px}
   .wrap{max-width:1040px;margin:0 auto}
   header.page{margin:8px 0 24px}
-  header.page h1{font-size:1.7rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
+  header.page h1{font-size:1.7rem;line-height:1.2;margin:8px 0 6px;letter-spacing:-.02em}
   header.page p{margin:0;color:var(--muted);max-width:68ch}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-  .badge{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
-    color:var(--brand-ink);background:color-mix(in srgb,var(--brand) 14%,transparent);padding:4px 10px;border-radius:999px}
+  .brandbar{display:flex;align-items:center;gap:15px;background:linear-gradient(105deg,var(--brand-ink),var(--brand));
+    color:#fff;border-radius:16px;padding:15px 20px;box-shadow:var(--shadow);margin-bottom:16px}
+  .brandmark{flex:0 0 auto;width:40px;height:52px}
+  .brandtext{display:flex;flex-direction:column;line-height:1.16;min-width:0}
+  .brandtext b{font-size:1.2rem;letter-spacing:.16em;font-weight:800}
+  .brandtext small{font-size:.72rem;opacity:.85}
+  .brandbar .cfg-link.onbrand{margin-left:auto;color:#fff;border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.08);white-space:nowrap}
+  .brandbar .cfg-link.onbrand:hover{background:rgba(255,255,255,.2);border-color:#fff}
+  @media(max-width:560px){.brandtext small{display:none}.brandbar{gap:12px}}
+  .badge{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--brand-ink);background:color-mix(in srgb,var(--brand) 14%,transparent);padding:4px 11px;border-radius:999px}
   .cfg-link{font-size:.85rem;font-weight:600;text-decoration:none;color:var(--brand-ink);
     border:1px solid var(--line);border-radius:10px;padding:8px 12px;white-space:nowrap}
   .cfg-link:hover{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent)}
@@ -216,10 +224,18 @@
 <body>
 <div class="wrap">
   <header class="page">
-    <div class="topbar">
-      <span class="badge">ANECA · Teletrabajo</span>
-      <a class="cfg-link" href="configuracion.html">⚙ Configuración</a>
+    <div class="brandbar">
+      <svg class="brandmark" viewBox="0 0 48 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M25 3 C13 3 5 12 8 23 C10 31 19 33 26 28 C35 22 36 5 25 3 Z" fill="#ffffff" opacity=".95"/>
+        <path d="M23 59 C35 59 43 50 40 39 C38 31 29 29 22 34 C13 40 12 57 23 59 Z" fill="#ffffff" opacity=".62"/>
+      </svg>
+      <div class="brandtext">
+        <b>ANECA</b>
+        <small>Agencia Nacional de Evaluación de la Calidad y Acreditación</small>
+      </div>
+      <a class="cfg-link onbrand" href="configuracion.html">⚙ Configuración</a>
     </div>
+    <span class="badge">Teletrabajo</span>
     <h1>Planificador de teletrabajo y días presenciales</h1>
     <p>Usa la <b>plantilla semanal</b> para prerrellenar el año, y ajusta en el calendario tus <b>días presenciales</b>
     y <b>ausencias</b>. El resto de días laborables son <b>teletrabajo</b>. Las semanas de <b>Navidad y Semana Santa</b>
