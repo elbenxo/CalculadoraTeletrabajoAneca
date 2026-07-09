@@ -3,12 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora de Teletrabajo · ANECA</title>
-<meta name="description" content="Planifica en un calendario anual tus días presenciales, ausencias y teletrabajo en ANECA. Plantilla semanal, semanas de teletrabajo obligatorio (Navidad y Semana Santa) y comprobación del 40% con los festivos de Madrid capital.">
+<title>Planificador de Teletrabajo</title>
+<meta name="description" content="Planifica en un calendario anual tus días presenciales, ausencias y teletrabajo. Plantilla semanal, semanas de teletrabajo obligatorio (Navidad y Semana Santa) y comprobación del 40% con los festivos de Madrid capital.">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
   :root{
     --bg:#f4f7f8; --card:#ffffff; --ink:#1c2a2e; --muted:#5d6f74;
-    --line:#dfe7e9; --brand:#0f6e78; --brand-ink:#0a555e;   /* teal ANECA */
+    --line:#dfe7e9; --brand:#0f6e78; --brand-ink:#0a555e;   /* teal */
     --office:#e8813a; --office-soft:#fdeede;      /* presencial */
     --tele:#2fa36b; --tele-soft:#e6f5ed;          /* teletrabajo */
     --twob:#0ea5b7; --twob-soft:#e2f5f8;          /* teletrabajo obligatorio */
@@ -20,7 +23,7 @@
   @media (prefers-color-scheme: dark){
     :root{
       --bg:#0d1618; --card:#152023; --ink:#eaf2f3; --muted:#95a8ad;
-      --line:#243236; --brand:#3fb5c0; --brand-ink:#6fd0d9;   /* teal ANECA */
+      --line:#243236; --brand:#3fb5c0; --brand-ink:#6fd0d9;   /* teal */
       --office:#f0955a; --office-soft:#3a2415;
       --tele:#4cc98c; --tele-soft:#12321f;
       --twob:#2dd4bf; --twob-soft:#0f2f2e;
@@ -42,8 +45,8 @@
     color:#fff;border-radius:16px;padding:15px 20px;box-shadow:var(--shadow);margin-bottom:16px}
   .brandmark{flex:0 0 auto;width:40px;height:52px}
   .brandtext{display:flex;flex-direction:column;line-height:1.16;min-width:0}
-  .brandtext b{font-size:1.2rem;letter-spacing:.16em;font-weight:800}
-  .brandtext small{font-size:.72rem;opacity:.85}
+  .brandtext b{font-size:1.12rem;letter-spacing:.005em;font-weight:800}
+  .brandtext small{font-size:.74rem;opacity:.85}
   .brandbar .cfg-link.onbrand{margin-left:auto;color:#fff;border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.08);white-space:nowrap}
   .brandbar .cfg-link.onbrand:hover{background:rgba(255,255,255,.2);border-color:#fff}
   @media(max-width:560px){.brandtext small{display:none}.brandbar{gap:12px}}
@@ -229,17 +232,26 @@
 <div class="wrap">
   <header class="page">
     <div class="brandbar">
-      <svg class="brandmark" viewBox="0 0 48 62" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M25 3 C13 3 5 12 8 23 C10 31 19 33 26 28 C35 22 36 5 25 3 Z" fill="#ffffff" opacity=".95"/>
-        <path d="M23 59 C35 59 43 50 40 39 C38 31 29 29 22 34 C13 40 12 57 23 59 Z" fill="#ffffff" opacity=".62"/>
+      <svg class="brandmark" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="14" y="6" width="3.5" height="8" rx="1.75" fill="#fff"/>
+        <rect x="30.5" y="6" width="3.5" height="8" rx="1.75" fill="#fff"/>
+        <rect x="6" y="10" width="36" height="30" rx="6" fill="#fff"/>
+        <path d="M12 10 h24 a6 6 0 0 1 6 6 v2 H6 v-2 a6 6 0 0 1 6 -6 Z" fill="#0a555e"/>
+        <g fill="#0f6e78">
+          <rect x="12" y="23" width="5" height="5" rx="1.4"/>
+          <rect x="21.5" y="23" width="5" height="5" rx="1.4"/>
+          <rect x="31" y="23" width="5" height="5" rx="1.4"/>
+          <rect x="12" y="31" width="5" height="5" rx="1.4"/>
+          <rect x="31" y="31" width="5" height="5" rx="1.4"/>
+        </g>
+        <rect x="21.5" y="31" width="5" height="5" rx="1.4" fill="#e8813a"/>
       </svg>
       <div class="brandtext">
-        <b>ANECA</b>
-        <small>Agencia Nacional de Evaluación de la Calidad y Acreditación</small>
+        <b>Planificador de Teletrabajo</b>
+        <small>Presencialidad y cumplimiento anual</small>
       </div>
       <a class="cfg-link onbrand" href="configuracion.html">⚙ Configuración</a>
     </div>
-    <span class="badge">Teletrabajo</span>
     <h1>Planificador de teletrabajo y días presenciales</h1>
     <p>Usa la <b>plantilla semanal</b> para prerrellenar el año, y ajusta en el calendario tus <b>días presenciales</b>
     y <b>ausencias</b>. El resto de días laborables son <b>teletrabajo</b>. Las semanas de <b>Navidad y Semana Santa</b>
@@ -330,7 +342,7 @@
   </section>
 
   <footer>
-    Herramienta orientativa. Ante cualquier duda, prevalece la normativa e instrucciones oficiales de ANECA.
+    Herramienta orientativa. Ante cualquier duda, prevalece la normativa e instrucciones oficiales aplicables en tu organización.
     · <a href="configuracion.html">Configuración</a><br>
     Desarrollado por <b>Benxamín Porto Domínguez</b>.
   </footer>
@@ -356,7 +368,12 @@
 (function(){
   "use strict";
   var PRESENCIAL_RATE=0.40;
-  var STORE_HOL="aneca-holidays-v1", STORE_PRES="aneca-presencial-v1", STORE_ABS="aneca-absences-v1", STORE_OBLIG="aneca-obligatorio-v1", STORE_START="aneca-inicio-v1", STORE_NAME="aneca-nombre-v1";
+  var STORE_HOL="tw-holidays-v1", STORE_PRES="tw-presencial-v1", STORE_ABS="tw-absences-v1", STORE_OBLIG="tw-obligatorio-v1", STORE_START="tw-inicio-v1", STORE_NAME="tw-nombre-v1";
+  // Migración transparente desde claves antiguas
+  (function migrate(){
+    var map={"tw-holidays-v1":"aneca-holidays-v1","tw-presencial-v1":"aneca-presencial-v1","tw-absences-v1":"aneca-absences-v1","tw-obligatorio-v1":"aneca-obligatorio-v1","tw-inicio-v1":"aneca-inicio-v1","tw-nombre-v1":"aneca-nombre-v1"};
+    try{ for(var k in map){ if(localStorage.getItem(k)===null){ var old=localStorage.getItem(map[k]); if(old!==null) localStorage.setItem(k,old); } } }catch(e){}
+  })();
   var MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   var MSHORT=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
   var DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], DOW_H=["L","M","X","J","V","S","D"];
@@ -729,7 +746,7 @@
 
     var h='';
     h+='<h1>Informe de planificación de teletrabajo</h1>';
-    h+='<p class="meta">ANECA'+(name?' · '+esc(name):'')+' · Año '+y+(sd?' · Alta: '+fmtD(sd):'')+' · Generado el '+gen+'</p>';
+    h+='<p class="meta">'+(name?esc(name)+' · ':'')+'Año '+y+(sd?' · Alta: '+fmtD(sd):'')+' · Generado el '+gen+'</p>';
 
     h+='<h2>Resumen anual</h2>';
     h+='<div class="rsum">'+
@@ -772,7 +789,7 @@
 
     h+='<div class="foot">Regla aplicada: mínimo presencial = ⌊0,40 × jornadas efectivas⌋ por periodo (jun–sep como bloque único). '+
       'El teletrabajo obligatorio (Navidad y Semana Santa) y los festivos de Madrid capital no computan como jornada efectiva. '+
-      'Documento orientativo; prevalece la normativa e instrucciones oficiales de ANECA.<br>'+
+      'Documento orientativo; prevalece la normativa e instrucciones oficiales aplicables en tu organización.<br>'+
       'Herramienta desarrollada por <b>Benxamín Porto Domínguez</b>.</div>';
 
     document.getElementById("report").innerHTML=h;

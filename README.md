@@ -1,7 +1,7 @@
-# Calculadora / Planificador de Teletrabajo · ANECA
+# Planificador de Teletrabajo
 
 Web estática (sin dependencias) para **planificar el año en un calendario** y comprobar el cumplimiento
-del teletrabajo en ANECA.
+del teletrabajo.
 
 - `index.html` — planificador anual.
 - `configuracion.html` — edición de los festivos de Madrid capital.
@@ -13,7 +13,7 @@ En el calendario anual marcas, con un pincel y **clic o arrastre** (ratón o ded
 - **Presencial** (naranja): días en los que vas a la oficina (no teletrabajas).
 - **Ausencia** (gris): vacaciones, bajas, permisos, asuntos propios…
 - **Teletrabajo** (verde): el resto de días laborables, mostrado automáticamente.
-- **Teletrabajo obligatorio** (teal): semanas de **Navidad y Semana Santa**; son teletrabajo por norma de ANECA
+- **Teletrabajo obligatorio** (teal): semanas de **Navidad y Semana Santa**; son teletrabajo obligatorio
   y **no computan** (no suben el mínimo presencial ni pueden marcarse como presenciales).
 - **Festivo Madrid** (violeta) y **fin de semana**: no computan como jornada.
 
@@ -57,4 +57,6 @@ no requiere tocar el código.
 3. Selecciona la rama y la carpeta raíz (`/`). Guarda.
 4. La página quedará disponible en `https://<usuario>.github.io/<repositorio>/`.
 
-> Herramienta orientativa. Ante cualquier duda, prevalece la normativa e instrucciones oficiales de ANECA.
+> Herramienta orientativa. Ante cualquier duda, prevalece la normativa e instrucciones oficiales aplicables en tu organización.
+
+Desarrollado por **Benxamín Porto Domínguez**.
