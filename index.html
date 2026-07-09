@@ -189,6 +189,10 @@
   #report thead th{background:#f4f6fb;color:#5c6b7f;font-size:.66rem;text-transform:uppercase;letter-spacing:.02em}
   #report tfoot td{font-weight:700;background:#f8fafc}
   #report tr{page-break-inside:avoid}
+  #report .rscroll{overflow-x:auto;max-width:100%}
+  #report table.mtbl{table-layout:fixed}
+  #report table.mtbl th:first-child,#report table.mtbl td:first-child{width:14%}
+  #report td.daylist{white-space:normal;word-break:break-word;text-align:left}
   #report .rlegend{display:flex;flex-wrap:wrap;gap:14px;font-size:.72rem;color:#5c6b7f;margin:2px 0 2px}
   #report .rlegend span{display:inline-flex;align-items:center;gap:6px}
   #report .rdot{width:9px;height:9px;border-radius:3px;display:inline-block}
@@ -741,12 +745,12 @@
     h+=buildMiniCal(y);
 
     h+='<h2>Detalle por periodo de cómputo</h2>';
-    h+='<table><thead><tr><th>Periodo</th><th>Laborables</th><th>Ausencias</th><th>T. oblig.</th><th>Efectivas</th><th>Presencial</th><th>Mín.</th><th>Teletrabajo</th><th>Estado</th></tr></thead><tbody>';
+    h+='<div class="rscroll"><table><thead><tr><th>Periodo</th><th>Laborables</th><th>Ausencias</th><th>T. oblig.</th><th>Efectivas</th><th>Presencial</th><th>Mín.</th><th>Teletrabajo</th><th>Estado</th></tr></thead><tbody>';
     P.forEach(function(p){
       var est=!p.applicable?'—':(p.ok?'<span class="rok">cumple</span>':'<span class="rbad">faltan '+(p.minOff-p.pres)+'</span>');
       h+='<tr><td>'+p.label+(p.sub?' ('+p.sub+')':'')+'</td><td>'+p.work+'</td><td>'+p.abs+'</td><td>'+p.twob+'</td><td>'+p.eff+'</td><td>'+p.pres+'</td><td>'+p.minOff+'</td><td>'+p.tele+'</td><td style="text-align:right">'+est+'</td></tr>';
     });
-    h+='</tbody><tfoot><tr><td>Total</td><td>'+tW+'</td><td>'+tA+'</td><td>'+tOb+'</td><td>'+tE+'</td><td>'+tP+'</td><td>'+tM+'</td><td>'+tT+'</td><td style="text-align:right">'+ok+'/'+app+'</td></tr></tfoot></table>';
+    h+='</tbody><tfoot><tr><td>Total</td><td>'+tW+'</td><td>'+tA+'</td><td>'+tOb+'</td><td>'+tE+'</td><td>'+tP+'</td><td>'+tM+'</td><td>'+tT+'</td><td style="text-align:right">'+ok+'/'+app+'</td></tr></tfoot></table></div>';
 
     h+='<h2>Vacaciones y ausencias</h2>';
     if(ranges.length){
@@ -756,13 +760,13 @@
     }else h+='<p class="daylist">Sin ausencias registradas.</p>';
 
     h+='<h2>Detalle mensual (día del mes)</h2>';
-    h+='<table><thead><tr><th>Mes</th><th>Presencial</th><th>Teletrabajo</th><th>Ausencias</th><th>T. oblig.</th></tr></thead><tbody>';
+    h+='<div class="rscroll"><table class="mtbl"><thead><tr><th>Mes</th><th>Presencial</th><th>Teletrabajo</th><th>Ausencias</th><th>T. oblig.</th></tr></thead><tbody>';
     for(var m=0;m<12;m++){
       var o=det[m], any=o.pres.length+o.tele.length+o.abs.length+o.twob.length;
       if(!any) continue;
       h+='<tr><td>'+MONTHS[m]+'</td><td class="daylist">'+dl(o.pres)+'</td><td class="daylist">'+dl(o.tele)+'</td><td class="daylist">'+dl(o.abs)+'</td><td class="daylist">'+dl(o.twob)+'</td></tr>';
     }
-    h+='</tbody></table>';
+    h+='</tbody></table></div>';
 
     h+=reportLegend(false);
 
